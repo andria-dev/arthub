@@ -7,7 +7,7 @@ import * as firebase from 'firebase'
 import {Center} from '../shared/center'
 import {Notifications} from './authentication/notifications'
 
-import './authentication/authentication-transitions.css'
+import './authentication/transitions.css'
 
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 const initialStatus = {type: 'idle', data: null}

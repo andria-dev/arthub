@@ -6,11 +6,12 @@ import {FirebaseAppProvider, useUser} from 'reactfire'
 import {Redirect} from '@reach/router'
 import {Login, Register} from './index/authentication'
 import {Spinner} from '@fluentui/react'
-import {Home} from './index/home'
-import {Center} from './shared/center'
 
 import {initializeIcons} from 'office-ui-fabric-react/lib/Icons'
 import {TransitionRouter} from './index/transition-router'
+import {Home} from './index/home'
+import {Landing} from './index/landing'
+import {Center} from './shared/center'
 
 initializeIcons()
 
@@ -46,7 +47,8 @@ ReactDOM.render(
         }
       >
         <TransitionRouter>
-          <PrivateRoute as={Home} path="/" />
+          <Landing path="/" />
+          <PrivateRoute as={Home} path="/home" />
           <UnauthenticatedRoute as={Login} path="/login" />
           <UnauthenticatedRoute as={Register} path="/register" />
         </TransitionRouter>

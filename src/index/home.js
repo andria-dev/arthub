@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
-import {Center} from '../shared/center';
-import {useFirestore, useFirestoreDoc, useUser} from 'reactfire';
+import React, {useEffect} from 'react'
+import {useFirestore, useFirestoreDoc, useUser} from 'reactfire'
+import {Center} from '../shared/center'
 
 export function Home() {
   const user = useUser()
@@ -17,8 +17,5 @@ export function Home() {
     //   })
   }, [userInfo])
 
-  return (
-    <Center>
-    </Center>
-  )
+  return <Center></Center>
 }
