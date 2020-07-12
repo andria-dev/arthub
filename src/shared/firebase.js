@@ -16,3 +16,8 @@ const functionsPrefixURL =
 		? 'https://us-central1-private-art-hub-project.cloudfunctions.net/'
 		: 'http://localhost:5001/private-art-hub-project/us-central1/'
 export const functions = ky.create({prefixUrl: functionsPrefixURL})
+
+export function clearFirestoreCache() {
+	const map = window._reactFirePreloadedObservables
+	for (const key of map.keys()) if (key.includes('firestore')) map.delete(key)
+}
