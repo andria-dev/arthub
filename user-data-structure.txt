@@ -1,0 +1,11 @@
+users {
+  userID {
+    characters {
+      characterID {
+        images: [file, file, file],
+        title: string,
+        description: markdown
+      }
+    }
+  }
+}

@@ -3,59 +3,54 @@ import ReactDOM from 'react-dom'
 import './index/index.css'
 import * as serviceWorker from './index/serviceWorker'
 import {FirebaseAppProvider, useUser} from 'reactfire'
-import {Redirect} from '@reach/router'
 import {Login, Register} from './index/authentication'
-import {Spinner} from '@fluentui/react'
+import {loadTheme, Spinner} from '@fluentui/react'
 
 import {initializeIcons} from 'office-ui-fabric-react/lib/Icons'
 import {TransitionRouter} from './index/transition-router'
 import {Home} from './index/home'
 import {Landing} from './index/landing'
 import {Center} from './shared/center'
+import {Redirect, Route} from 'react-router-dom'
+import {firebaseConfig} from './shared/firebase'
+import {theme} from './shared/theme'
+import {BasicBoundary} from './error-boundary'
 
+loadTheme(theme)
 initializeIcons()
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyDRi5_luFxHRmlAZzpWB6MXXozfc3PReyE',
-  authDomain: 'private-art-hub-project.firebaseapp.com',
-  databaseURL: 'https://private-art-hub-project.firebaseio.com',
-  projectId: 'private-art-hub-project',
-  storageBucket: 'private-art-hub-project.appspot.com',
-  messagingSenderId: '548647715304',
-  appId: '1:548647715304:web:1e260bd591e4424ab7245d',
-  measurementId: 'G-0JR1KQQPJ3',
+function PrivateRoute({as, ...props}) {
+	const user = useUser()
+	return user ? <Route component={as} {...props} /> : <Redirect to="/login" />
 }
 
-function PrivateRoute({as: Route, ...props}) {
-  const user = useUser()
-  return user ? <Route {...props} /> : <Login />
-}
-
-function UnauthenticatedRoute({as: Route, ...props}) {
-  const user = useUser()
-  return !user ? <Route {...props} /> : <Redirect to="/" noThrow />
+function UnauthenticatedRoute({as, ...props}) {
+	const user = useUser()
+	return !user ? <Route component={as} {...props} /> : <Redirect to="/" />
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-      <Suspense
-        fallback={
-          <Center>
-            <Spinner label="Preparing everything as fast as we can..." />
-          </Center>
-        }
-      >
-        <TransitionRouter>
-          <Landing path="/" />
-          <PrivateRoute as={Home} path="/home" />
-          <UnauthenticatedRoute as={Login} path="/login" />
-          <UnauthenticatedRoute as={Register} path="/register" />
-        </TransitionRouter>
-      </Suspense>
-    </FirebaseAppProvider>
-  </React.StrictMode>,
-  document.getElementById('root'),
+	<React.StrictMode>
+		<BasicBoundary>
+			<FirebaseAppProvider firebaseConfig={firebaseConfig}>
+				<Suspense
+					fallback={
+						<Center>
+							<Spinner label="Preparing everything as fast as we can..." />
+						</Center>
+					}
+				>
+					<TransitionRouter>
+						<PrivateRoute exact as={Home} path="/" />
+						<Landing exact path="/landing" />
+						<UnauthenticatedRoute exact as={Login} path="/login" />
+						<UnauthenticatedRoute exact as={Register} path="/register" />
+					</TransitionRouter>
+				</Suspense>
+			</FirebaseAppProvider>
+		</BasicBoundary>
+	</React.StrictMode>,
+	document.getElementById('root'),
 )
 
 // If you want your app to work offline and load faster, you can change

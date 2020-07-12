@@ -1,0 +1,17 @@
+.ProfileMenuItem {
+	background: transparent;
+	transition: background 0.2s ease-out;
+}
+.ProfileMenuItem:active {
+	background: var(--orange);
+}
+.ProfileMenuItem:focus {
+	background: var(--light-orange);
+	outline: none;
+}
+
+@media (hover: hover) {
+	.ProfileMenuItem:hover {
+		background: var(--orange);
+	}
+}

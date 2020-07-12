@@ -1,19 +1,19 @@
-import {Location, Router} from '@reach/router'
-import {TransitionGroup, CSSTransition} from 'react-transition-group'
 import React from 'react'
+import {AnimatePresence} from 'framer-motion'
+import {BrowserRouter, Route, Switch} from 'react-router-dom'
 
 export function TransitionRouter({children}) {
-  return (
-    <Location>
-      {({location}) => (
-        <TransitionGroup className="transition-group" style={{height: '100%'}}>
-          <CSSTransition key={location.key} classNames="page" timeout={300}>
-            <Router location={location} className="page-wrapper" style={{height: '100%', width: '100%'}}>
-              {children}
-            </Router>
-          </CSSTransition>
-        </TransitionGroup>
-      )}
-    </Location>
-  )
+	return (
+		<BrowserRouter>
+			<Route
+				render={({location}) => (
+					<AnimatePresence exitBeforeEnter initial={false}>
+						<Switch location={location} key={location.pathname} style={{width: '100%', height: '100%'}}>
+							{children}
+						</Switch>
+					</AnimatePresence>
+				)}
+			/>
+		</BrowserRouter>
+	)
 }

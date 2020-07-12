@@ -1,21 +1,30 @@
-import React, {useEffect} from 'react'
-import {useFirestore, useFirestoreDoc, useUser} from 'reactfire'
-import {Center} from '../shared/center'
+import React from 'react'
+import {useAuth, useFirestore, useFirestoreDoc, useUser} from 'reactfire'
+import {motion} from 'framer-motion'
+import {Text} from '@fluentui/react'
+import 'wicg-inert'
+import './home/styles.css'
+import {ProfileMenu, ProfileMenuItem} from './home/profile-menu'
 
 export function Home() {
-  const user = useUser()
+	const auth = useAuth()
+	const user = useUser()
+	const userRef = useFirestore().collection('users').doc(user.uid)
+	const userInfo = useFirestoreDoc(userRef)
 
-  const userRef = useFirestore().collection('users').doc(user.uid)
-  const userInfo = useFirestoreDoc(userRef)
-  console.log(userInfo)
-
-  useEffect(() => {
-    // if (!userInfo.exists)
-    //   userInfo.set({
-    //     characters: [],
-    //
-    //   })
-  }, [userInfo])
-
-  return <Center></Center>
+	return (
+		<motion.div animate>
+			<header style={{display: 'flex', padding: '27px 20px'}}>
+				<Text variant="xxLarge">
+					<span aria-hidden="true">💛</span> Art Hub
+				</Text>
+				<ProfileMenu email={user.email} name={user.displayName}>
+					<ProfileMenuItem>Share</ProfileMenuItem>
+					<ProfileMenuItem>Settings</ProfileMenuItem>
+					<ProfileMenuItem>Help</ProfileMenuItem>
+					<ProfileMenuItem onClick={() => auth.signOut()}>Sign Out</ProfileMenuItem>
+				</ProfileMenu>
+			</header>
+		</motion.div>
+	)
 }
