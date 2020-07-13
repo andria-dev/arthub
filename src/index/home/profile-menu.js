@@ -191,6 +191,7 @@ export function ProfileMenu({email, name, children}) {
 	let buttonLabel = 'Open profile menu'
 	if (current.matches('open')) buttonLabel = 'Close profile menu'
 
+	// TODO: Add focus style to profile menu close button (while profile menu is open)
 	return (
 		<div id="profile-menu">
 			<motion.div style={profileMenuStyles} animate={{height}} transition={transitions.menu}>

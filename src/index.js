@@ -15,13 +15,14 @@ import {Redirect, Route} from 'react-router-dom'
 import {firebaseConfig} from './shared/firebase'
 import {theme} from './shared/theme'
 import {BasicBoundary} from './error-boundary'
+import {NoRoute} from './src/index/404'
 
 loadTheme(theme)
 initializeIcons()
 
 function PrivateRoute({as, ...props}) {
 	const user = useUser()
-	return user ? <Route component={as} {...props} /> : <Redirect to="/login" />
+	return user ? <Route component={as} {...props} /> : <Login />
 }
 
 function UnauthenticatedRoute({as, ...props}) {
@@ -45,6 +46,7 @@ ReactDOM.render(
 						<Landing exact path="/landing" />
 						<UnauthenticatedRoute exact as={Login} path="/login" />
 						<UnauthenticatedRoute exact as={Register} path="/register" />
+						<NoRoute exact path="*" />
 					</TransitionRouter>
 				</Suspense>
 			</FirebaseAppProvider>

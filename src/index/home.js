@@ -5,7 +5,7 @@ import {Text} from '@fluentui/react'
 import 'wicg-inert'
 import './home/styles.css'
 import {ProfileMenu, ProfileMenuItem} from './home/profile-menu'
-import {clearFirestoreCache} from '../shared/firebase';
+import {clearFirestoreCache} from '../shared/firebase'
 
 export function Home() {
 	const auth = useAuth()
@@ -20,7 +20,7 @@ export function Home() {
 	}
 
 	return (
-		<motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}>
+		<motion.div animate>
 			<header style={{display: 'flex', padding: '27px 20px'}}>
 				<Text variant="xxLarge">
 					<span aria-hidden="true">💛</span> Art Hub

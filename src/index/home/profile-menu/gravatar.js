@@ -93,7 +93,7 @@ export function ProfilePhoto({email, ...props}) {
 	}, [email, send])
 
 	let photo
-	if (user.photoURL) photo = user.photoURL
+	if (user?.photoURL) photo = user.photoURL
 	else if (current.matches('idle.found')) photo = current.context.url
 	else if (current.matches('idle.non_existent'))
 		return (
