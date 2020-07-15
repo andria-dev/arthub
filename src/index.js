@@ -15,7 +15,7 @@ import {Redirect, Route} from 'react-router-dom'
 import {firebaseConfig} from './shared/firebase'
 import {theme} from './shared/theme'
 import {BasicBoundary} from './error-boundary'
-import {NoRoute} from './src/index/404'
+import {NoRoute} from './index/404'
 
 loadTheme(theme)
 initializeIcons()

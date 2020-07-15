@@ -1,11 +1,13 @@
 import React from 'react'
 import {useAuth, useFirestore, useFirestoreDoc, useUser} from 'reactfire'
 import {motion} from 'framer-motion'
-import {Text} from '@fluentui/react'
+import {Text, FontIcon} from '@fluentui/react'
 import 'wicg-inert'
 import './home/styles.css'
 import {ProfileMenu, ProfileMenuItem} from './home/profile-menu'
 import {clearFirestoreCache} from '../shared/firebase'
+import {colors} from '../shared/theme'
+import {ActionButton} from './home/action-button.js'
 
 export function Home() {
 	const auth = useAuth()
@@ -22,7 +24,7 @@ export function Home() {
 	return (
 		<motion.div animate>
 			<header style={{display: 'flex', padding: '27px 20px'}}>
-				<Text variant="xxLarge">
+				<Text variant="title" as="h1" style={{margin: 0}}>
 					<span aria-hidden="true">💛</span> Art Hub
 				</Text>
 				<ProfileMenu email={user.email} name={user.displayName}>
@@ -32,6 +34,12 @@ export function Home() {
 					<ProfileMenuItem onClick={signOut}>Sign Out</ProfileMenuItem>
 				</ProfileMenu>
 			</header>
+			<main></main>
+			<section style={{position: 'absolute', bottom: 0, left: 0, padding: 10}}>
+				<ActionButton variant="round" iconName="Add">
+					New
+				</ActionButton>
+			</section>
 		</motion.div>
 	)
 }

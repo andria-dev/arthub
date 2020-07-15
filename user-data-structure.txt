@@ -3,8 +3,8 @@ users {
     characters {
       characterID {
         images: [file, file, file],
-        title: string,
-        description: markdown
+        name: string,
+        story: markdown
       }
     }
   }

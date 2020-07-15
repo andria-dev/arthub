@@ -213,7 +213,7 @@ export function ProfileMenu({email, name, children}) {
 						style={nameWrapperStyles}
 						transition={{type: 'spring', mass: 0.2}}
 					>
-						<Text variant="xLarge" style={nameStyles}>
+						<Text variant="profileTitle" style={nameStyles}>
 							{current.matches('open') ? 'Profile Menu' : name}
 						</Text>
 					</motion.span>

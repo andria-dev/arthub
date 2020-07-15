@@ -1,0 +1,26 @@
+.ActionButton {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+
+	width: 111px;
+	height: 51px;
+
+	border: none;
+	cursor: pointer;
+}
+
+.ActionButton:focus {
+	outline: none;
+	box-shadow: 0 0 0 1px var(--real-orange);
+}
+
+.ActionButton--round {
+	background: var(--light-orange);
+
+	border-radius: 26px;
+	box-shadow: var(--orange-shadow) 0 5px 7px 0;
+}
+
+.ActionButton--flat {
+}

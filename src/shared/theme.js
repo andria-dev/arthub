@@ -26,10 +26,20 @@ export const theme = createTheme({
 		white: '#ffffff',
 	},
 	fonts: {
-		xLarge: 'Inter',
-		xxLarge: {
-			fontSize: '30px',
+		actionButton: {
+			fontSize: 16,
 			fontFamily: 'Inter',
+			fontWeight: 600,
+		},
+		profileTitle: {
+			fontSize: 20,
+			fontFamily: 'Inter',
+			fontWeight: 600,
+		},
+		title: {
+			fontSize: 30,
+			fontFamily: 'Inter',
+			fontWeight: 600,
 		},
 	},
 })
@@ -41,6 +51,9 @@ export const colors = {
 	lightOrange: 'hsl(18, 72%, 93%)',
 	orange: 'hsl(19, 72%, 75%)',
 	realOrange: 'hsl(19, 72%, 50%)',
+	orangeShadow: 'hsla(19, 72%, 75%, 0.25)',
+	dark: 'hsl(0, 0%, 10%)',
+	notAsDark: 'hsl(0, 0%, 35%)',
 }
 
 for (const colorName in colors) {
