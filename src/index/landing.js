@@ -7,7 +7,7 @@ import {motion} from 'framer-motion'
 export function Landing() {
 	return (
 		<Center>
-			<motion.div animate>
+			<motion.div layout>
 				<Link as={RouterLink} to="/">
 					Open App
 				</Link>

@@ -8,6 +8,8 @@
 
 	border: none;
 	cursor: pointer;
+
+	transition: box-shadow 0.12s ease-out;
 }
 
 .ActionButton:focus {

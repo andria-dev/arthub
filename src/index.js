@@ -16,6 +16,7 @@ import {firebaseConfig} from './shared/firebase'
 import {theme} from './shared/theme'
 import {BasicBoundary} from './error-boundary'
 import {NoRoute} from './index/404'
+import {NewCharacter} from './index/new-character'
 
 loadTheme(theme)
 initializeIcons()
@@ -43,6 +44,7 @@ ReactDOM.render(
 				>
 					<TransitionRouter>
 						<PrivateRoute exact as={Home} path="/" />
+						<PrivateRoute exact as={NewCharacter} path="/new-character" />
 						<Landing exact path="/landing" />
 						<UnauthenticatedRoute exact as={Login} path="/login" />
 						<UnauthenticatedRoute exact as={Register} path="/register" />

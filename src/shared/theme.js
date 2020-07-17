@@ -31,7 +31,7 @@ export const theme = createTheme({
 			fontFamily: 'Inter',
 			fontWeight: 600,
 		},
-		profileTitle: {
+		mediumTitle: {
 			fontSize: 20,
 			fontFamily: 'Inter',
 			fontWeight: 600,

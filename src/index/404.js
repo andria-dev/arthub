@@ -7,7 +7,7 @@ import {motion} from 'framer-motion'
 export function NoRoute() {
 	return (
 		<Center>
-			<motion.div animate style={{display: 'flex', flexDirection: 'column'}}>
+			<motion.div layout style={{display: 'flex', flexDirection: 'column'}}>
 				<Text variant="superLarge" style={{marginBottom: '1rem'}}>
 					Nothing here
 				</Text>
