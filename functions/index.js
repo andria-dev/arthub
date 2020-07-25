@@ -28,7 +28,7 @@ exports.gravatar = functions.https.onRequest((req, res) => {
 					.header('Content-Length', response.rawBody.length)
 					.send(response.rawBody)
 			} catch (error) {
-				console.log(error)
+					console.log(error)
 				res.status(500).end()
 			}
 		} catch (error) {

@@ -11,11 +11,7 @@ export const firebaseConfig = {
 	measurementId: 'G-0JR1KQQPJ3',
 }
 
-const functionsPrefixURL =
-	process.env.NODE_ENV === 'production'
-		? 'https://us-central1-private-art-hub-project.cloudfunctions.net/'
-		: 'http://localhost:5001/private-art-hub-project/us-central1/'
-export const functions = ky.create({prefixUrl: functionsPrefixURL})
+export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})
 
 export function clearFirestoreCache() {
 	const map = window._reactFirePreloadedObservables

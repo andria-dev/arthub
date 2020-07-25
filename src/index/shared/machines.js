@@ -1,5 +1,11 @@
 import {assign, Machine} from 'xstate'
-import {functions} from '../../shared/firebase'
+import gravatar from 'gravatar'
+import {
+	MissingGravatarProfileError,
+	UnreachableGravatarPhotoError,
+	UnreachableGravatarProfileError,
+} from './errors'
+import {corsAnywhere} from '../../shared/firebase'
 
 export const slideshowMachine = Machine(
 	{
@@ -107,8 +113,30 @@ export const profileMenuMachine = Machine({
 })
 
 async function fetchGravatarThumbnail(email) {
-	const blob = await functions.get(`gravatar?email=${email}`).blob()
-	return URL.createObjectURL(blob)
+	const profileURL = gravatar.profile_url(email)
+	try {
+		const data = await corsAnywhere.get(profileURL, {
+			responseType: 'json',
+			headers: {
+				'X-Requested-With': 'ky'
+			}
+		}).json()
+		const photoURL = data.entry[0].thumbnailUrl
+
+		try {
+			const blob = await corsAnywhere.get(photoURL).blob()
+			return URL.createObjectURL(blob)
+		} catch (error) {
+			throw new UnreachableGravatarPhotoError(email, error?.response)
+		}
+	} catch (error) {
+		if (error instanceof UnreachableGravatarPhotoError)
+			throw error
+		else if (error?.response?.status === 404)
+			throw new MissingGravatarProfileError(email, error?.response)
+		else
+			throw new UnreachableGravatarProfileError(email, error?.response)
+	}
 }
 export const gravatarMachine = Machine({
 	id: 'gravatar',
@@ -144,12 +172,15 @@ export const gravatarMachine = Machine({
 					{
 						target: 'idle.non_existent',
 						cond: (ctx, event) => {
-							return event?.data?.response?.status === 404
+							return event?.data instanceof MissingGravatarProfileError
 						},
 					},
 					{
 						target: 'idle.failure',
-						actions: assign({error: (ctx, event) => event?.data}),
+						actions: assign({error(ctx, event) {
+							console.log(event?.data)
+							return event?.data
+						}}),
 					},
 				],
 			},
