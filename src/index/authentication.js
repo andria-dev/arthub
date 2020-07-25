@@ -63,6 +63,10 @@ const pageData = {
 		login: 'Unable to sign in.',
 		register: 'Unable to register',
 	},
+	passwordName: {
+		login: 'current-password',
+		register: 'new-password',
+	},
 }
 
 const pageVariants = {
@@ -91,7 +95,7 @@ function AuthenticationPage({type}) {
 	async function handleEmailSignIn(event) {
 		event.preventDefault()
 		const email = event.target.email.value
-		const password = event.target.password.value
+		const password = event.target[pageData.passwordName[type]].value
 		const name = event.target.name?.value
 
 		try {
@@ -128,7 +132,13 @@ function AuthenticationPage({type}) {
 					<Stack as="form" style={{width: '20rem', maxWidth: 'calc(100vw - 4rem)'}} onSubmit={handleEmailSignIn}>
 						{type === 'register' && <TextField label="Name" placeholder="Andria" type="name" name="name" required />}
 						<TextField label="Email" placeholder="name@hey.com" type="email" name="email" required />
-						<TextField label="Password" placeholder="•••••••••••••••" type="password" name="password" required />
+						<TextField
+							label="Password"
+							placeholder="•••••••••••••••"
+							type="password"
+							name={pageData.passwordName[type]}
+							required
+						/>
 
 						<motion.div
 							style={{marginTop: '1rem'}}

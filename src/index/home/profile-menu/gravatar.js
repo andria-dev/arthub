@@ -5,59 +5,7 @@ import React, {useEffect} from 'react'
 import {FontIcon, ImageIcon, Spinner} from '@fluentui/react'
 import {functions} from '../../../shared/firebase'
 import {colors} from '../../../shared/theme'
-
-async function fetchGravatarThumbnail(email) {
-	const blob = await functions.get(`gravatar?email=${email}`).blob()
-	return URL.createObjectURL(blob)
-}
-
-const gravatarMachine = Machine({
-	id: 'gravatar',
-	initial: 'idle',
-	context: {url: null, error: null},
-	states: {
-		idle: {
-			initial: 'initial',
-			states: {
-				initial: {},
-				found: {
-					type: 'final',
-				},
-				non_existent: {
-					type: 'final',
-				},
-				failure: {
-					type: 'final',
-				},
-			},
-			on: {FETCH: 'loading'},
-		},
-		loading: {
-			invoke: {
-				src: (ctx, event) => fetchGravatarThumbnail(event.email),
-				onDone: [
-					{
-						target: 'idle.found',
-						actions: assign({url: (ctx, event) => event.data}),
-					},
-				],
-				onError: [
-					{
-						target: 'idle.non_existent',
-						cond: (ctx, event) => {
-							return event?.data?.response?.status === 404
-						},
-					},
-					{
-						target: 'idle.failure',
-						actions: assign({error: (ctx, event) => event?.data}),
-					},
-				],
-			},
-			on: {FETCH: 'loading'},
-		},
-	},
-})
+import {gravatarMachine} from '../../shared/machines'
 
 function Circle({children, as: Component = 'div', background = 'none', size, style = {}, ...props}) {
 	return (
@@ -86,7 +34,7 @@ function ProfileCircle({style = {}, ...props}) {
 
 export function ProfilePhoto({email, ...props}) {
 	const user = useUser()
-	const [current, send] = useMachine(gravatarMachine)
+	const [state, send] = useMachine(gravatarMachine)
 
 	useEffect(() => {
 		if (email) send('FETCH', {email})
@@ -94,14 +42,14 @@ export function ProfilePhoto({email, ...props}) {
 
 	let photo
 	if (user?.photoURL) photo = user.photoURL
-	else if (current.matches('idle.found')) photo = current.context.url
-	else if (current.matches('idle.non_existent'))
+	else if (state.matches('idle.found')) photo = state.context.url
+	else if (state.matches('idle.non_existent'))
 		return (
 			<ProfileCircle background={colors.pink} {...props}>
 				<FontIcon iconName="Contact" style={{color: colors.realPink, fontSize: '2.5rem'}} />
 			</ProfileCircle>
 		)
-	else if (current.matches('loading'))
+	else if (state.matches('loading'))
 		return (
 			<ProfileCircle background={colors.pink} {...props}>
 				<Spinner />

@@ -2818,6 +2818,11 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
+attr-accept@^2.0.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/attr-accept/-/attr-accept-2.1.0.tgz#a231a854385d36ff7a99647bb77b33c8a5175aee"
+  integrity sha512-sLzVM3zCCmmDtDNhI0i96k6PUztkotSOXqE4kDGQt/6iDi5M+H0srjeF+QC6jN581l4X/Zq3Zu/tgcErEssavg==
+
 autoprefixer@^9.6.1:
   version "9.7.4"
   resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-9.7.4.tgz#f8bf3e06707d047f0641d87aee8cfb174b2a5378"
@@ -5275,6 +5280,13 @@ file-loader@4.3.0:
   dependencies:
     loader-utils "^1.2.3"
     schema-utils "^2.5.0"
+
+file-selector@^0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/file-selector/-/file-selector-0.1.12.tgz#fe726547be219a787a9dcc640575a04a032b1fd0"
+  integrity sha512-Kx7RTzxyQipHuiqyZGf+Nz4vY9R1XGxuQl/hLoJwq+J4avk/9wxxgZyHKtbyIPJmbD4A66DWGYfyykWNpcYutQ==
+  dependencies:
+    tslib "^1.9.0"
 
 file-uri-to-path@1.0.0:
   version "1.0.0"
@@ -8007,6 +8019,11 @@ mini-css-extract-plugin@0.9.0:
     schema-utils "^1.0.0"
     webpack-sources "^1.1.0"
 
+mini-debounce@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/mini-debounce/-/mini-debounce-1.0.8.tgz#8936a7c8892c71078936930e1a025e5a5392a45c"
+  integrity sha512-EqUsV34zuw2N9UHjRl1bwaDiLe1d/P8AemSp/EbDjOsZ7gB+z+7F9wcJWqfU3QpPnHD1oKGe2n6Fw90QsLkBkA==
+
 minimalistic-assert@^1.0.0, minimalistic-assert@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/minimalistic-assert/-/minimalistic-assert-1.0.1.tgz#2e194de044626d4a10e7f7fbc00ce73e83e4d5c7"
@@ -9972,6 +9989,15 @@ react-dom@^0.0.0-experimental-7f28234f8:
     object-assign "^4.1.1"
     scheduler "0.0.0-experimental-7f28234f8"
 
+react-dropzone@^11.0.2:
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-11.0.2.tgz#1a4084f520c2eafbeb24026760b3ee8f3759cfd3"
+  integrity sha512-/Wde9Il1aJ1FtWllg3N2taIeJh4aftx6UGUG8R1TmLnZit2RnDcEjcKwEEbKwgLXTTh8QQpiZWQJq45jTy1jCA==
+  dependencies:
+    attr-accept "^2.0.0"
+    file-selector "^0.1.12"
+    prop-types "^15.7.2"
+
 react-error-overlay@^6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.7.tgz#1dcfb459ab671d53f660a991513cb2f0a0553108"
@@ -11864,6 +11890,11 @@ uuid@^7.0.0:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
   integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
+
+uuid@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.2.0.tgz#cb10dd6b118e2dada7d0cd9730ba7417c93d920e"
+  integrity sha512-CYpGiFTUrmI6OBMkAdjSDM0k5h8SkkiTP4WAjQgDgNB1S3Ou9VBEvr6q0Kv2H1mMk7IWfxYGpMH5sd5AvcIV2Q==
 
 v8-compile-cache@^2.0.3:
   version "2.1.0"

@@ -7,6 +7,7 @@ import React, {useEffect, useRef} from 'react'
 import {forEachNonDescendantTree} from './profile-menu/helpers'
 import {transitions} from '../shared/config'
 import {Text} from '@fluentui/react'
+import {profileMenuMachine} from '../shared/machines'
 
 const profileMenuStyles = {
 	position: 'absolute',
@@ -111,37 +112,8 @@ export function ProfileMenuItem(props) {
 	)
 }
 
-const profileMenuMachine = Machine({
-	id: 'profile-menu',
-	initial: 'closed',
-	states: {
-		closed: {
-			on: {
-				HOVER_START: 'partiallyOpen.hover',
-				FOCUS: 'partiallyOpen.focus',
-				TAP_TOGGLE: 'open',
-			},
-		},
-		partiallyOpen: {
-			initial: 'focus',
-			states: {
-				hover: {on: {HOVER_END: '#profile-menu.closed'}},
-				focus: {on: {BLUR: '#profile-menu.closed'}},
-			},
-			on: {TAP_TOGGLE: 'open'},
-		},
-		open: {
-			on: {
-				TAP_AWAY: 'closed',
-				TAP_TOGGLE: 'partiallyOpen',
-				ESC: 'partiallyOpen',
-			},
-		},
-	},
-})
-
 export function ProfileMenu({email, name, children}) {
-	const [current, send, service] = useMachine(profileMenuMachine)
+	const [state, send, service] = useMachine(profileMenuMachine)
 	const backdropRef = useRef(null)
 
 	// handle TAP_AWAY, ESC, and inert
@@ -181,15 +153,15 @@ export function ProfileMenu({email, name, children}) {
 
 	let width
 	let height = PROFILE_SIZE
-	if (current.matches('closed')) width = PROFILE_SIZE
-	else if (current.matches('partiallyOpen')) width = PROFILE_SIZE * 3
-	else if (current.matches('open')) {
+	if (state.matches('closed')) width = PROFILE_SIZE
+	else if (state.matches('partiallyOpen')) width = PROFILE_SIZE * 3
+	else if (state.matches('open')) {
 		width = 249
 		height = 259
 	}
 
 	let buttonLabel = 'Open profile menu'
-	if (current.matches('open')) buttonLabel = 'Close profile menu'
+	if (state.matches('open')) buttonLabel = 'Close profile menu'
 
 	// TODO: Add focus style to profile menu close button (while profile menu is open)
 	return (
@@ -209,12 +181,12 @@ export function ProfileMenu({email, name, children}) {
 					title={buttonLabel}
 				>
 					<motion.span
-						animate={{opacity: current.matches('partiallyOpen') || current.matches('open') ? 1 : 0}}
+						animate={{opacity: state.matches('partiallyOpen') || state.matches('open') ? 1 : 0}}
 						style={nameWrapperStyles}
 						transition={{type: 'spring', mass: 0.2}}
 					>
 						<Text variant="mediumTitle" style={nameStyles}>
-							{current.matches('open') ? 'Profile Menu' : name}
+							{state.matches('open') ? 'Profile Menu' : name}
 						</Text>
 					</motion.span>
 					<ProfilePhoto email={email} />
@@ -222,7 +194,7 @@ export function ProfileMenu({email, name, children}) {
 
 				{/* Menu buttons */}
 				<AnimatePresence>
-					{current.matches('open') && (
+					{state.matches('open') && (
 						<motion.div initial="hidden" animate="visible" exit="hidden" variants={listVariants} style={listStyles}>
 							{children}
 						</motion.div>
@@ -230,7 +202,7 @@ export function ProfileMenu({email, name, children}) {
 				</AnimatePresence>
 			</motion.div>
 			<AnimatePresence>
-				{(current.matches('open') || current.matches('partiallyOpen')) && (
+				{(state.matches('open') || state.matches('partiallyOpen')) && (
 					<motion.div
 						ref={backdropRef}
 						initial={{opacity: 0}}

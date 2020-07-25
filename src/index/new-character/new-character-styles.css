@@ -1,0 +1,47 @@
+.NewCharacterInput input,
+.NewCharacterInput input::placeholder,
+.NewCharacterInput textarea,
+.NewCharacterInput textarea::placeholder {
+	width: 100%;
+	padding: 0;
+	color: var(--dark);
+	line-height: 25px;
+
+	font-size: 20px;
+	font-family: 'Nunito Sans', sans-serif;
+	font-weight: 500;
+	border: none;
+}
+
+.NewCharacterInput textarea {
+	margin-top: 10px;
+}
+
+.NewCharacterInput input::placeholder,
+.NewCharacterInput textarea::placeholder {
+	color: var(--not-as-dark);
+}
+
+.NewCharacterInput label {
+	font-family: Inter, sans-serif;
+	font-weight: 600;
+	font-size: 20px;
+}
+
+.NewCharacterInput:not(:last-of-type) {
+	margin-bottom: 20px;
+}
+
+.CharacterStoryInput {
+	flex-grow: 1;
+}
+
+.CharacterStoryInput > .ms-TextField-wrapper,
+.CharacterStoryInput > .ms-TextField-wrapper > .ms-TextField-fieldGroup {
+	height: 100%;
+}
+
+.drop-target:focus {
+	outline: dotted 5px var(--real-pink);
+	outline-offset: 5px;
+}

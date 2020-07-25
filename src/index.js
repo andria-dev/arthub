@@ -14,7 +14,7 @@ import {Center} from './shared/center'
 import {Redirect, Route} from 'react-router-dom'
 import {firebaseConfig} from './shared/firebase'
 import {theme} from './shared/theme'
-import {BasicBoundary} from './error-boundary'
+import {BasicBoundary} from './index/error-boundary'
 import {NoRoute} from './index/404'
 import {NewCharacter} from './index/new-character'
 

@@ -1,11 +1,19 @@
+Firestore Data
 users {
-  userID {
-    characters {
-      characterID {
-        images: [file, file, file],
-        name: string,
-        story: markdown
-      }
+    userID {
+        characters {
+            characterID {
+                images: [fileID, fileID, fileID],
+                name: string,
+                story: markdown
+            }
+        }
     }
-  }
+}
+
+File Data
+users {
+    userID {
+        fileID: File
+    }
 }

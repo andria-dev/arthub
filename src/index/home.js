@@ -7,7 +7,7 @@ import './home/styles.css'
 import {ProfileMenu, ProfileMenuItem} from './home/profile-menu'
 import {clearFirestoreCache} from '../shared/firebase'
 import {colors} from '../shared/theme'
-import {ActionButton} from './home/action-button.js'
+import {ActionButton} from './shared/action-button'
 import {useHistory} from 'react-router-dom'
 
 export function Home() {

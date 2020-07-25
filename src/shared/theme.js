@@ -36,6 +36,11 @@ export const theme = createTheme({
 			fontFamily: 'Inter',
 			fontWeight: 600,
 		},
+		higherTitle: {
+			fontSize: 24,
+			fontFamily: 'Inter',
+			fontWeight: 600,
+		},
 		title: {
 			fontSize: 30,
 			fontFamily: 'Inter',
