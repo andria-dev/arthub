@@ -1,7 +1,6 @@
 import {colors} from '../../shared/theme'
 import {PROFILE_SIZE, ProfilePhoto} from './profile-menu/gravatar'
 import {AnimatePresence, motion} from 'framer-motion'
-import {Machine} from 'xstate'
 import {useMachine} from '@xstate/react'
 import React, {useEffect, useRef} from 'react'
 import {forEachNonDescendantTree} from './profile-menu/helpers'

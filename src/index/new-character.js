@@ -1,16 +1,15 @@
 import React, {useState} from 'react'
 import {useHistory} from 'react-router-dom'
 import {motion} from 'framer-motion'
-import {Text, TextField, Label} from '@fluentui/react'
+import {Text, Label} from '@fluentui/react'
 import {useId} from '@uifabric/react-hooks'
 import './new-character/new-character-styles.css'
 import {colors} from '../shared/theme'
 import {ActionButton} from './shared/action-button'
 import {debounce} from 'mini-debounce'
 import {v1 as uuidv1} from 'uuid'
-import {useFirestore, useFirestoreDoc, useUser} from 'reactfire'
+import {useFirestore, useUser} from 'reactfire'
 import {useDropzone} from 'react-dropzone'
-import {Machine, assign} from 'xstate'
 import {useMachine} from '@xstate/react'
 import {slideshowMachine} from './shared/machines'
 import {FontIcon} from '@fluentui/react'
@@ -70,13 +69,22 @@ const removeButtonStyles = {
 }
 
 function NewCharacterInput({className, multiline, label, ...props}) {
+	const [status, setStatus] = useState('idle')
+	const focusHandlers = {
+		onFocus() {
+			setStatus('focus')
+		},
+		onBlur() {
+			setStatus('idle')
+		}
+	}
 	return (
 		<div className={'NewCharacterInput ' + (className ?? '')}>
-			{label && <Label htmlFor={props.id}>{label}</Label>}
+			{label && <Label htmlFor={props.id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>{label}</Label>}
 			{multiline ? (
-				<AutoExpandingTextarea fontSize={20} lineHeight={25} minimumRows={5} {...props} />
+				<AutoExpandingTextarea fontSize={20} lineHeight={25} minimumRows={5} {...props} {...focusHandlers} />
 			) : (
-				<input {...props} />
+				<input {...props} {...focusHandlers} />
 			)}
 		</div>
 	)
@@ -197,9 +205,7 @@ function useSlideshow() {
 
 	const dropID = useId('drop')
 	let dropMessage
-	{
-		/* TODO: align center on Desktop sizes */
-	}
+	/* TODO: align center on Desktop sizes */
 	if (state.matches('photos'))
 		dropMessage = (
 			<Text variant="higherTitle" style={{textAlign: 'right', padding: '0 31px', marginTop: 10}}>
@@ -241,9 +247,6 @@ export function NewCharacter() {
 
 	const {
 		getInputProps,
-		isDragAccept,
-		isDragActive,
-		isDragReject,
 		slideshowSection,
 		dropMessage,
 		dropID,
@@ -264,6 +267,7 @@ export function NewCharacter() {
 				story,
 			},
 		})
+		setUUID(uuidv1())
 	}
 
 	return (
@@ -308,6 +312,7 @@ export function NewCharacter() {
 			</main>
 			<section
 				style={{
+					position: 'fixed',
 					display: 'flex',
 					justifyContent: 'space-evenly',
 					alignItems: 'center',
@@ -320,7 +325,7 @@ export function NewCharacter() {
 				<ActionButton variant="flat" iconName="Back" onClick={cancel}>
 					Cancel
 				</ActionButton>
-				<ActionButton variant="flat" iconName="Save" onClick={createValueStorer}>
+				<ActionButton variant="flat" iconName="Save" onClick={save}>
 					Save
 				</ActionButton>
 			</section>

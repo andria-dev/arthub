@@ -37,7 +37,7 @@ export function AutoExpandingTextarea({
 	const ref = useRef(null)
 	useEffect(() => {
 		configureAutoExpantion(ref.current, lineHeight)
-	}, [ref])
+	}, [ref, lineHeight])
 
 	function handleChange(event) {
 		autoExpand(event.target, lineHeight)

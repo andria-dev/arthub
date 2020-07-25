@@ -11,6 +11,12 @@
 	font-family: 'Nunito Sans', sans-serif;
 	font-weight: 500;
 	border: none;
+	box-shadow: none;
+}
+
+.NewCharacterInput input:focus,
+.NewCharacterInput textarea:focus {
+	outline: none;
 }
 
 .NewCharacterInput textarea {

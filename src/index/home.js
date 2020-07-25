@@ -1,7 +1,7 @@
 import React from 'react'
 import {useAuth, useFirestore, useFirestoreDoc, useUser} from 'reactfire'
 import {motion} from 'framer-motion'
-import {Text, FontIcon} from '@fluentui/react'
+import {Text} from '@fluentui/react'
 import 'wicg-inert'
 import './home/styles.css'
 import {ProfileMenu, ProfileMenuItem} from './home/profile-menu'
@@ -28,7 +28,7 @@ export function Home() {
 	}
 
 	let posts = []
-	for (const id in userInfo.characters) posts.push(<p>Placeholder</p>)
+	for (const id in userInfo.characters) posts.push(<p>{id} Placeholder</p>)
 	if (!posts.length)
 		// TODO: Add alt for pride-drawing.svg
 		posts = (
