@@ -107,7 +107,6 @@ function createValueStorer(key, setter) {
 
 const dropZoneMessages = {
 	accepted: 'File is valid, drop it to upload it!',
-	active: 'Drop it now!',
 	rejected: 'This file is not a valid photo.',
 	idle: 'Drop your character photos above.',
 }
@@ -116,7 +115,7 @@ function useSlideshow() {
 	const [state, send] = useMachine(slideshowMachine)
 	const dropzone = useDropzone({
 		accept: 'image/*',
-		onDrop(acceptedFiles) {
+		onDropAccepted(acceptedFiles) {
 			// handle cancelled file operations
 			const filesWithPreview = acceptedFiles.map(file => Object.assign(file, {preview: URL.createObjectURL(file)}))
 			send('ADDED_PHOTOS', {data: filesWithPreview})
@@ -198,9 +197,8 @@ function useSlideshow() {
 		)
 
 	let dropMessageContent
-	if (dropzone.isDragAccept) dropMessageContent = dropZoneMessages.accepted
-	else if (dropzone.isDragActive) dropMessageContent = dropZoneMessages.active
-	else if (dropzone.isDragReject) dropMessageContent = dropZoneMessages.rejected
+	if (dropzone.isDragReject) dropMessageContent = dropZoneMessages.rejected
+	else if (dropzone.isDragAccept) dropMessageContent = dropZoneMessages.accepted
 	else dropMessageContent = dropZoneMessages.idle
 
 	const dropID = useId('drop')

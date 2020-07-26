@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react'
 
 function autoExpand(element, lineHeight) {
+	element.style.overflow = 'unset'
 	// adjust rows the smallest possible value
 	const minRows = parseInt(element.getAttribute('data-minimum-rows'), 10)
 	element.rows = minRows
@@ -11,9 +12,12 @@ function autoExpand(element, lineHeight) {
 	const heightDifference = element.scrollHeight - element.baseScrollHeight
 	const rows = Math.ceil(heightDifference / lineHeight)
 	element.rows = minRows + rows
+
+	// prevent scrollbar
+	element.style.overflow = 'hidden'
 }
 
-function configureAutoExpantion(element) {
+function configureAutoExpantion(element, lineHeight) {
 	// save textarea value for later
 	const savedValue = element.value
 
@@ -23,7 +27,7 @@ function configureAutoExpantion(element) {
 
 	// reset textarea's value
 	element.value = savedValue
-	autoExpand(element)
+	autoExpand(element, lineHeight)
 }
 
 export function AutoExpandingTextarea({
