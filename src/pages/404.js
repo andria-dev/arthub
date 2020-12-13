@@ -1,4 +1,3 @@
-import React from 'react'
 import {Center} from '../components/center'
 import {Text, Link} from '@fluentui/react'
 import {Link as RouterLink} from 'react-router-dom'

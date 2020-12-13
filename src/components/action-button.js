@@ -1,6 +1,5 @@
 import {FontIcon, Text} from '@fluentui/react'
 import {motion} from 'framer-motion'
-import React from 'react'
 import {colors} from '../shared/theme'
 import '../styles/action-button-styles.css'
 

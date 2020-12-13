@@ -1,6 +1,6 @@
 import {useMachine} from '@xstate/react'
 import {useUser} from 'reactfire'
-import React, {useEffect} from 'react'
+import {useEffect} from 'react'
 import {FontIcon, ImageIcon, Spinner} from '@fluentui/react'
 import {colors} from '../shared/theme'
 import {gravatarMachine} from '../shared/machines'

@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react'
+import {useMemo} from 'react'
 import {useParams, useHistory} from 'react-router-dom'
 import {Text} from '@fluentui/react'
 import {useFirestore, useFirestoreDoc, useStorage, useUser} from 'reactfire'

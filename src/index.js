@@ -1,4 +1,4 @@
-import React, {Suspense} from 'react'
+import {StrictMode, Suspense} from 'react'
 import ReactDOM from 'react-dom'
 import './styles/index.css'
 import * as serviceWorker from './serviceWorker'
@@ -51,7 +51,7 @@ function UnauthenticatedRoute({as, ...props}) {
 }
 
 ReactDOM.render(
-	<React.StrictMode>
+	<StrictMode>
 		<BasicBoundary>
 			<FirebaseAppProvider firebaseConfig={firebaseConfig}>
 				<Suspense
@@ -73,7 +73,7 @@ ReactDOM.render(
 				</Suspense>
 			</FirebaseAppProvider>
 		</BasicBoundary>
-	</React.StrictMode>,
+	</StrictMode>,
 	document.getElementById('root'),
 )
 

@@ -1,4 +1,3 @@
-import React from 'react'
 import {useAuth, useFirestore, useFirestoreDoc, useUser} from 'reactfire'
 import {motion} from 'framer-motion'
 import {Text} from '@fluentui/react'

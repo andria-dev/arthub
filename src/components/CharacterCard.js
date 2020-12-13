@@ -1,4 +1,3 @@
-import React from 'react'
 import {useMachine} from '@xstate/react'
 import {useUser, useStorage} from 'reactfire'
 import {Link as RouterLink} from 'react-router-dom'

@@ -1,6 +1,5 @@
 import {DialogContent, DialogOverlay} from '@reach/dialog'
 import {Text} from '@fluentui/react'
-import React from 'react'
 import {colors} from '../shared/theme'
 import {Image} from '@fluentui/react'
 
