@@ -4,10 +4,10 @@ import React, {useState} from 'react'
 import {DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField} from '@fluentui/react'
 import {Link as RouterLink} from 'react-router-dom'
 import * as firebase from 'firebase'
-import {Center} from '../shared/center'
-import {Notifications} from './authentication/notifications'
+import {Center} from '../components/center'
+import {Notifications} from '../components/notifications'
 import {motion} from 'framer-motion'
-import {transitions} from './shared/config'
+import {transitions} from '../shared/config'
 
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 const initialStatus = {type: 'idle', data: null}

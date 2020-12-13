@@ -1,5 +1,5 @@
 export class BadStatusError extends Error {
-	constructor(status, message, response=null) {
+	constructor(status, message, response = null) {
 		super(`Bad Status (${status}): ${message}`)
 		this.name = 'BadStatusError'
 		this.status = status

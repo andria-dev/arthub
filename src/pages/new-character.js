@@ -1,19 +1,19 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useHistory} from 'react-router-dom'
 import {motion} from 'framer-motion'
 import {Text, Label} from '@fluentui/react'
 import {useId} from '@uifabric/react-hooks'
-import './new-character/new-character-styles.css'
+import '../styles/new-character-styles.css'
 import {colors} from '../shared/theme'
-import {ActionButton} from './shared/action-button'
+import {ActionButton} from '../components/action-button'
 import {debounce} from 'mini-debounce'
-import {v1 as uuidv1} from 'uuid'
-import {useFirestore, useUser} from 'reactfire'
+import {useFirestore, useStorage, useUser} from 'reactfire'
 import {useDropzone} from 'react-dropzone'
 import {useMachine} from '@xstate/react'
-import {slideshowMachine} from './shared/machines'
+import {newCharacterMachine, uploadSlideshowMachine} from '../shared/machines'
 import {FontIcon} from '@fluentui/react'
-import {AutoExpandingTextarea} from './auto-expanding-textarea'
+import {AutoExpandingTextarea} from '../components/auto-expanding-textarea'
+import {SavingDialog} from '../components/saving-dialog'
 
 const artistSVGStyles = {
 	width: 298,
@@ -76,11 +76,15 @@ function NewCharacterInput({className, multiline, label, ...props}) {
 		},
 		onBlur() {
 			setStatus('idle')
-		}
+		},
 	}
 	return (
 		<div className={'NewCharacterInput ' + (className ?? '')}>
-			{label && <Label htmlFor={props.id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>{label}</Label>}
+			{label && (
+				<Label htmlFor={props.id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>
+					{label}
+				</Label>
+			)}
 			{multiline ? (
 				<AutoExpandingTextarea fontSize={20} lineHeight={25} minimumRows={5} {...props} {...focusHandlers} />
 			) : (
@@ -112,12 +116,15 @@ const dropZoneMessages = {
 }
 
 function useSlideshow() {
-	const [state, send] = useMachine(slideshowMachine)
+	const [state, send] = useMachine(uploadSlideshowMachine)
 	const dropzone = useDropzone({
 		accept: 'image/*',
 		onDropAccepted(acceptedFiles) {
 			// handle cancelled file operations
-			const filesWithPreview = acceptedFiles.map(file => Object.assign(file, {preview: URL.createObjectURL(file)}))
+			const filesWithPreview = acceptedFiles.map(file => {
+				file.preview = URL.createObjectURL(file)
+				return file
+			})
 			send('ADDED_PHOTOS', {data: filesWithPreview})
 		},
 	})
@@ -168,6 +175,7 @@ function useSlideshow() {
 			</div>
 		)
 	else if (state.matches('newPhoto'))
+		// TODO: Make drop target accessible
 		slideshowSection = (
 			<div style={previewWrapperStyles}>
 				{previousButton}
@@ -239,94 +247,96 @@ export function NewCharacter() {
 	const [name, setName] = useState(localStorage.getItem('character-name') ?? '')
 	const [story, setStory] = useState(localStorage.getItem('character-story') ?? '')
 
+	const firestore = useFirestore()
+	const storage = useStorage()
 	const user = useUser()
-	const [uuid, setUUID] = useState(() => uuidv1())
-	const userInfoRef = useFirestore().collection('users').doc(user.uid)
 
-	const {
-		getInputProps,
-		slideshowSection,
-		dropMessage,
-		dropID,
-	} = useSlideshow()
+	const {getInputProps, slideshowSection, dropMessage, dropID, files} = useSlideshow()
 
 	function cancel() {
 		clearStorage()
 		history.replace('/')
 	}
 
-	function save() {
-		clearStorage()
-		// TODO: upload images
-		userInfoRef.set({
-			[`characters.${uuid}`]: {
-				images: [], // TODO: populate `images` list with IDs
-				name,
-				story,
-			},
-		})
-		setUUID(uuidv1())
+	const [saveState, send] = useMachine(newCharacterMachine)
+	function save(event) {
+		event.preventDefault()
+		send('SAVE', {name, story, files, uid: user.uid, storage, firestore})
 	}
+
+	useEffect(() => {
+		if (saveState.matches({finished: 'success'})) {
+			clearStorage()
+			history.push(`/character/${saveState.context.characterID}`)
+		}
+	}, [saveState.value, saveState.context.characterID, history, saveState])
 
 	return (
 		<motion.div layout style={{height: '100%'}}>
-			<main style={{height: 'calc(100% - 62px)'}}>
-				<form
+			<form onSubmit={save} style={{display: 'inline'}}>
+				<main style={{height: 'calc(100% - 62px)'}}>
+					<div
+						style={{
+							display: 'flex',
+							flexDirection: 'column',
+							padding: '0 0 45px 0',
+							height: 'calc(100% - 45px)',
+							overflowY: 'scroll',
+						}}
+					>
+						<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
+							{slideshowSection}
+							<input id={dropID} {...getInputProps()} />
+							{dropMessage}
+						</div>
+
+						<div style={{padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1}}>
+							<NewCharacterInput
+								id={nameFieldID}
+								label="Name"
+								placeholder="Imogen Winchester"
+								onChange={createValueStorer('character-name', setName)}
+								value={name}
+								required
+							/>
+							<NewCharacterInput
+								id={storyFieldID}
+								label="Character Story"
+								placeholder="Tell your characters story and explain their background..."
+								className="CharacterStoryInput"
+								onChange={createValueStorer('character-story', setStory)}
+								value={story}
+								multiline
+								required
+							/>
+						</div>
+					</div>
+				</main>
+				<section
 					style={{
+						position: 'fixed',
 						display: 'flex',
-						flexDirection: 'column',
-						padding: '0 0 45px 0',
-						height: 'calc(100% - 45px)',
-						overflowY: 'scroll',
+						justifyContent: 'space-evenly',
+						alignItems: 'center',
+						width: '100%',
+						height: 62,
+						backgroundColor: 'white',
+						boxShadow: `${colors.lightOrange} 0 -2px 7px 0`,
 					}}
 				>
-					<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
-						{slideshowSection}
-						<input id={dropID} {...getInputProps()} />
-						{dropMessage}
-					</div>
+					<ActionButton variant="flat" iconName="Back" onClick={cancel} type="button">
+						Cancel
+					</ActionButton>
+					<ActionButton variant="flat" iconName="Save" type="submit">
+						Save
+					</ActionButton>
+				</section>
+			</form>
 
-					<div style={{padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-						<NewCharacterInput
-							id={nameFieldID}
-							label="Name"
-							placeholder="Imogen Winchester"
-							onChange={createValueStorer('character-name', setName)}
-							value={name}
-							required
-						/>
-						<NewCharacterInput
-							id={storyFieldID}
-							label="Character Story"
-							placeholder="Tell your characters story and explain their background..."
-							className="CharacterStoryInput"
-							onChange={createValueStorer('character-story', setStory)}
-							value={story}
-							multiline
-							required
-						/>
-					</div>
-				</form>
-			</main>
-			<section
-				style={{
-					position: 'fixed',
-					display: 'flex',
-					justifyContent: 'space-evenly',
-					alignItems: 'center',
-					width: '100%',
-					height: 62,
-					backgroundColor: 'white',
-					boxShadow: `${colors.lightOrange} 0 -2px 7px 0`,
-				}}
-			>
-				<ActionButton variant="flat" iconName="Back" onClick={cancel}>
-					Cancel
-				</ActionButton>
-				<ActionButton variant="flat" iconName="Save" onClick={save}>
-					Save
-				</ActionButton>
-			</section>
+			<SavingDialog
+				isOpen={['uploadingFiles', 'updatingCharacterInfo', {finished: 'error'}].some(saveState.matches)}
+				status={saveState.value}
+			/>
 		</motion.div>
 	)
 }

@@ -1,0 +1,90 @@
+.CharacterCard {
+	position: relative;
+	display: block;
+
+	width: 222px;
+	height: 224px;
+
+	border-radius: 6px;
+	margin-bottom: 20px;
+
+	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.09);
+	overflow: hidden;
+}
+.CharacterCard__cover {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.CharacterCard__overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+
+	width: 100%;
+	height: 100%;
+
+	opacity: 0;
+	background-color: hsla(0, 0%, 0%, 0.65);
+
+	transition: opacity 0.2s ease;
+}
+.CharacterCard__name {
+	max-width: calc(100% - 50px);
+	margin-bottom: 30px;
+
+	color: white;
+
+	font-size: 20px;
+	font-family: 'Inter', sans-serif;
+	text-align: center;
+	text-overflow: ellipsis;
+
+	white-space: nowrap;
+	overflow: hidden;
+
+	transform: translateY(20px);
+	transition: transform 0.2s ease;
+}
+.CharacterCard__view-button {
+	margin-bottom: 15px;
+	padding: 10px 15px;
+
+	color: white;
+	background-color: var(--real-orange);
+
+	font-family: 'Inter', sans-serif;
+	font-weight: bold;
+	text-decoration: none;
+
+	border-radius: 7px;
+	pointer-events: none;
+}
+
+.CharacterCard:hover .CharacterCard__cover,
+.CharacterCard:focus-within .CharacterCard__cover {
+	filter: blur(6px);
+}
+.CharacterCard:hover .CharacterCard__overlay,
+.CharacterCard:focus-within .CharacterCard__overlay {
+	opacity: 1;
+}
+.CharacterCard:hover .CharacterCard__name,
+.CharacterCard:focus-within .CharacterCard__name {
+	transform: translateY(0);
+}
+.CharacterCard:hover .CharacterCard__view-button,
+.CharacterCard:focus-within .CharacterCard__view-button {
+	pointer-events: auto;
+	transition-property: pointer-events;
+	transition-delay: 0.2s;
+}
+
+.CharacterCard__view-button:focus {
+	outline-offset: -2px;
+}

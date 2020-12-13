@@ -1,5 +1,5 @@
 import React from 'react'
-import {Center} from '../shared/center'
+import {Center} from '../components/center'
 import {Text, Link} from '@fluentui/react'
 import {Link as RouterLink} from 'react-router-dom'
 import {motion} from 'framer-motion'

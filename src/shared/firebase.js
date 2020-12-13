@@ -13,6 +13,7 @@ export const firebaseConfig = {
 
 export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})
 
+// Workaround from https://github.com/FirebaseExtended/reactfire/discussions/228#discussioncomment-182830
 export function clearFirestoreCache() {
 	const map = window._reactFirePreloadedObservables
 	for (const key of map.keys()) if (key.includes('firestore')) map.delete(key)
