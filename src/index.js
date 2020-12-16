@@ -2,7 +2,7 @@ import {StrictMode, Suspense} from 'react'
 import ReactDOM from 'react-dom'
 import './styles/index.css'
 import * as serviceWorker from './serviceWorker'
-import {FirebaseAppProvider, useUser} from 'reactfire'
+import {FirebaseAppProvider} from 'reactfire'
 import {Login, Register} from './pages/authentication'
 import {loadTheme, Spinner} from '@fluentui/react'
 
@@ -12,7 +12,7 @@ import {Home} from './pages/home'
 import {Landing} from './pages/landing'
 import {Center} from './components/center'
 import {Route, Redirect} from 'react-router-dom'
-import {firebaseConfig} from './shared/firebase'
+import {config, FirebaseProvider, useUser} from './shared/firebase'
 import {theme} from './shared/theme'
 import {BasicBoundary} from './components/error-boundary'
 import {NoRoute} from './pages/404'
@@ -53,25 +53,27 @@ function UnauthenticatedRoute({as, ...props}) {
 ReactDOM.render(
 	<StrictMode>
 		<BasicBoundary>
-			<FirebaseAppProvider firebaseConfig={firebaseConfig}>
-				<Suspense
-					fallback={
-						<Center>
-							<Spinner label="Preparing everything as fast as we can..." />
-						</Center>
-					}
-				>
-					<TransitionRouter>
-						<PrivateRoute exact as={Home} path="/" />
-						<PrivateRoute exact as={NewCharacter} path="/new-character" />
-						<PrivateRoute exact as={Character} path="/character/:characterID" />
-						<Landing exact path="/landing" />
-						<UnauthenticatedRoute exact as={Login} path="/login" />
-						<UnauthenticatedRoute exact as={Register} path="/register" />
-						<NoRoute exact path="*" />
-					</TransitionRouter>
-				</Suspense>
-			</FirebaseAppProvider>
+			<FirebaseProvider>
+				<FirebaseAppProvider firebaseConfig={config}>
+					<Suspense
+						fallback={
+							<Center>
+								<Spinner label="Preparing everything as fast as we can..." />
+							</Center>
+						}
+					>
+						<TransitionRouter>
+							<PrivateRoute exact as={(props) => <Suspense fallback={<p>Test</p>}><Home {...props} /></Suspense>} path="/" />
+							<PrivateRoute exact as={NewCharacter} path="/new-character" />
+							<PrivateRoute exact as={Character} path="/character/:characterID" />
+							<Landing exact path="/landing" />
+							<UnauthenticatedRoute exact as={Login} path="/login" />
+							<UnauthenticatedRoute exact as={Register} path="/register" />
+							<NoRoute exact path="*" />
+						</TransitionRouter>
+					</Suspense>
+				</FirebaseAppProvider>
+			</FirebaseProvider>
 		</BasicBoundary>
 	</StrictMode>,
 	document.getElementById('root'),

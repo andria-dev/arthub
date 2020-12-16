@@ -1,34 +1,56 @@
-import {useAuth, useFirestore, useFirestoreDoc, useUser} from 'reactfire'
+import {useAuth, useFirestore, useFirestoreDoc} from 'reactfire'
 import {motion} from 'framer-motion'
 import {Text} from '@fluentui/react'
 import 'wicg-inert'
 import '../styles/profile-menu.css'
 import {ProfileMenu, ProfileMenuItem} from '../components/profile-menu'
-import {clearFirestoreCache} from '../shared/firebase'
+import {
+	auth,
+	clearFirestoreCache,
+	createDocumentResource,
+	firestore,
+	useDocumentResource,
+	useUser,
+} from '../shared/firebase'
 import {colors} from '../shared/theme'
 import {ActionButton} from '../components/action-button'
 import {useHistory} from 'react-router-dom'
 import {CharacterCard} from '../components/CharacterCard'
+import {useEffect, useMemo, Suspense} from 'react'
+
+let ref = firestore.collection('users').doc('qyn462H3paOebIjHGqyXlIRJrfl1')
+let resource = createDocumentResource(ref)
 
 export function Home() {
-	const auth = useAuth()
 	const user = useUser()
-	const userRef = useFirestore().collection('users').doc(user.uid)
-	const userInfo = useFirestoreDoc(userRef)
-	const history = useHistory()
+	const ref = firestore.collection('users').doc(user.uid)
+	const resource = createDocumentResource(ref)
+	return (
+		<Suspense fallback={<p>Getting user characters</p>}>
+			<HomePage documentRef={ref} resource={resource} />
+		</Suspense>
+	)
+}
 
+function HomePage({documentRef, resource}) {
+	const user = useUser()
+
+	const history = useHistory()
 	function openNewCharacterPage() {
 		history.push('/new-character')
 	}
 
 	function signOut() {
-		auth.signOut()
-		clearFirestoreCache()
-		history.push('/login')
+		auth.signOut().then(() => {
+			history.push('/login')
+		})
 	}
 
+	const document = useDocumentResource(documentRef, resource)
+	console.log(document)
+	const {characters} = document
 	let posts = []
-	for (const character of userInfo.data().characters) posts.push(<CharacterCard character={character} />)
+	for (const character of characters) posts.push(<CharacterCard character={character} />)
 
 	if (!posts.length)
 		// TODO: Add alt for pride-drawing.svg
