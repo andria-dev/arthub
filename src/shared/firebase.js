@@ -5,6 +5,7 @@ import 'firebase/storage'
 import {Spinner} from '@fluentui/react'
 import {Center} from '../components/center'
 import {useContext, useEffect, createContext, useState, useMemo, useReducer} from 'react'
+import {createResourceFromSubscription} from './resources'
 
 export const config = {
 	apiKey: 'AIzaSyDRi5_luFxHRmlAZzpWB6MXXozfc3PReyE',
@@ -28,134 +29,29 @@ export const storage = firebase.storage()
 export const auth = firebase.auth()
 export const provider = new firebase.auth.GoogleAuthProvider()
 
-/**
- * Creates a resource for use with the React Suspense API.
- * Usage:
- * ```js
- *	function Post({id}) {
- *		const post = useMemo(() => createResource('post/'+id), [id])
- *		return (
- *			<article>{post.stuff}</article>
- *		)
- *	}
- *
- *	function App() {
- *		return (
- *			<Suspense fallback={<Spinner />}>
- *				<Post id="test-id-1" />
- *			</Suspense>
- *		)
- *	}
- * ```
- * @param promise
- * @returns {{read(): *}|*}
- */
-export function createResource(promise) {
-	let status = 'loading'
-	let result
-
-	const suspender = promise
-		.then(value => {
-			status = 'success'
-			result = value
-		})
-		.catch(error => {
-			status = 'error'
-			result = error
-		})
-
-	return {
-		read() {
-			switch (status) {
-				case 'loading':
-					throw suspender
-				case 'success':
-					return result
-				case 'error':
-					throw result
-			}
-		},
-	}
-}
-
 const FirebaseContext = createContext({})
-export function FirebaseProvider({children}) {
-	const [user, setUser] = useState({status: 'loading', value: null})
-	const state = useMemo(() => ({user}), [user])
+function FirebaseResources({resource, children}) {
+	const [user, setUser] = useState(resource.read())
 
 	useEffect(() => {
 		return auth.onAuthStateChanged((user, error) => {
-			if (error) setUser({status: 'error', value: error})
-			else setUser({status: 'success', value: user})
+			if (error) console.warn(error)
+			else setUser(user)
 		})
 	}, [])
 
-	switch (user.status) {
-		case 'loading':
-			return (
-				<Center>
-					<Spinner label="Preparing everything as fast as we can..." />
-				</Center>
-			)
-		case 'error':
-			throw user.value
-		case 'success':
-		default:
-			return <FirebaseContext.Provider value={state}>{children}</FirebaseContext.Provider>
-	}
+	const value = useMemo(() => ({user}), [user])
+	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
+}
+
+export function FirebaseProvider({children}) {
+	const resource = createResourceFromSubscription(auth.onAuthStateChanged.bind(auth))
+	return <FirebaseResources resource={resource}>{children}</FirebaseResources>
 }
 
 export function useUser() {
 	const state = useContext(FirebaseContext)
-	return state.user.value
-}
-
-function documentResourceReducer(state, action) {
-	switch (action.type) {
-		case 'NEW_SNAPSHOT':
-			return {
-				...state,
-				status: 'loaded',
-				result: action.result,
-			}
-		case 'ERROR':
-			return {
-				...state,
-				status: 'error',
-				error: action.error,
-			}
-		default:
-			return state
-	}
-}
-
-/**
- * A Suspense-friendly resource that is used when loading a Firestore document.
- * @typedef {{status: string, result: DocumentData | undefined, ref: DocumentReference<DocumentData>}} DocumentResource
- */
-
-/**
- * A Suspense-friendly hook that creates a resource for getting the value of a document in the Firestore.
- * @param {string} collection
- * @param {string} document
- * @returns {DocumentResource}
- */
-
-export function createDocumentResource(documentRef) {
-	return createResource(documentRef.get().then(doc => doc.data()))
-}
-export function useDocumentResource(documentRef, resource) {
-	console.log('useDocumentResource - here')
-	const [result, setResult] = useState(resource.read())
-
-	useEffect(() => {
-		return documentRef.onSnapshot((snapshot, error) => {
-			if (error) console.warn(error)
-			else setResult(snapshot.data())
-		})
-	}, [documentRef])
-
-	return result
+	return state.user
 }
 
 export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})

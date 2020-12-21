@@ -1,9 +1,9 @@
 import {useMachine} from '@xstate/react'
-import {useUser} from 'reactfire'
+import {useUser} from '../shared/firebase.js'
 import {useEffect} from 'react'
 import {FontIcon, ImageIcon, Spinner} from '@fluentui/react'
-import {colors} from '../shared/theme'
-import {gravatarMachine} from '../shared/machines'
+import {colors} from '../shared/theme.js'
+import {gravatarMachine} from '../shared/machines.js'
 
 function Circle({children, as: Component = 'div', background = 'none', size, style = {}, ...props}) {
 	return (

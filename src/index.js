@@ -53,27 +53,25 @@ function UnauthenticatedRoute({as, ...props}) {
 ReactDOM.render(
 	<StrictMode>
 		<BasicBoundary>
-			<FirebaseProvider>
-				<FirebaseAppProvider firebaseConfig={config}>
-					<Suspense
-						fallback={
-							<Center>
-								<Spinner label="Preparing everything as fast as we can..." />
-							</Center>
-						}
-					>
-						<TransitionRouter>
-							<PrivateRoute exact as={(props) => <Suspense fallback={<p>Test</p>}><Home {...props} /></Suspense>} path="/" />
-							<PrivateRoute exact as={NewCharacter} path="/new-character" />
-							<PrivateRoute exact as={Character} path="/character/:characterID" />
-							<Landing exact path="/landing" />
-							<UnauthenticatedRoute exact as={Login} path="/login" />
-							<UnauthenticatedRoute exact as={Register} path="/register" />
-							<NoRoute exact path="*" />
-						</TransitionRouter>
-					</Suspense>
-				</FirebaseAppProvider>
-			</FirebaseProvider>
+			<Suspense
+				fallback={
+					<Center>
+						<Spinner label="Preparing everything as fast as we can..." />
+					</Center>
+				}
+			>
+				<FirebaseProvider>
+					<TransitionRouter>
+						<PrivateRoute exact as={Home} path="/" />
+						<PrivateRoute exact as={NewCharacter} path="/new-character" />
+						<PrivateRoute exact as={Character} path="/character/:characterID" />
+						<Landing exact path="/landing" />
+						<UnauthenticatedRoute exact as={Login} path="/login" />
+						<UnauthenticatedRoute exact as={Register} path="/register" />
+						<NoRoute exact path="*" />
+					</TransitionRouter>
+				</FirebaseProvider>
+			</Suspense>
 		</BasicBoundary>
 	</StrictMode>,
 	document.getElementById('root'),

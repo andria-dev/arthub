@@ -1,18 +1,19 @@
 import {useMemo} from 'react'
-import {useParams, useHistory} from 'react-router-dom'
-import {Text} from '@fluentui/react'
-import {useFirestore, useFirestoreDoc, useStorage, useUser} from 'reactfire'
-import {motion} from 'framer-motion'
-import {colors} from '../shared/theme'
-import {ActionButton} from '../components/action-button'
+
 import xss from 'xss'
 import marked from 'marked'
+import {motion} from 'framer-motion'
+import {Text} from '@fluentui/react'
 import {useMachine, useService} from '@xstate/react'
+import {useParams, useHistory} from 'react-router-dom'
+import {useFirestore, useFirestoreDoc, useStorage, useUser} from 'reactfire'
+
+import {colors} from '../shared/theme'
+import {ActionButton} from '../components/action-button'
 import {plainSlideshowMachine} from '../shared/machines'
 
 function CharacterSlideshow({service}) {
 	const [state, send] = useService(service)
-	console.log(state.value)
 
 	switch (state.value) {
 		case 'fetching':

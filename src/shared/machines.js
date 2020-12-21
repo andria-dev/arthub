@@ -1,11 +1,15 @@
-import {assign, Machine, spawn} from 'xstate'
+import {assign, createMachine, spawn} from 'xstate'
 import gravatar from 'gravatar'
-import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
-import {corsAnywhere} from './firebase'
 import {v1 as uuidv1} from 'uuid'
-import * as firebase from 'firebase'
 
-export const uploadSlideshowMachine = Machine(
+import {corsAnywhere} from './firebase'
+import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
+
+// TODO: remove this and use src/shared/firebase.js
+import * as firebase from 'firebase'
+import {fetchImageURL} from './resources'
+
+export const uploadSlideshowMachine = createMachine(
 	{
 		id: 'upload-slideshow',
 		initial: 'noPhotos',
@@ -81,55 +85,7 @@ export const uploadSlideshowMachine = Machine(
 	},
 )
 
-const imageDataURLMap = new Map()
-/**
- * Retrieves the URL of an image from a file ID then fetches the image and caches and returns the data URL.
- * @param storage
- * @param userID
- * @param fileID
- * @returns {Promise<string|any>}
- */
-async function fetchImageURL({storage, userID, fileID}) {
-	if (imageDataURLMap.has(fileID)) return imageDataURLMap.get(fileID)
-
-	const url = await storage.ref().child(`${userID}/${fileID}`).getDownloadURL()
-	return await fetch(url)
-		.then(res => res.blob())
-		.then(blob => {
-			const dataURL = URL.createObjectURL(blob)
-			imageDataURLMap.set(fileID, dataURL)
-			return dataURL
-		})
-}
-
-// TODO: onError needs to log the error
-export const ImageLoadingMachine = Machine({
-	id: 'image-loading-machine',
-	initial: 'fetching',
-	context: {imageURL: ''},
-	states: {
-		fetching: {
-			invoke: {
-				src: fetchImageURL,
-				onDone: {
-					actions: assign({
-						imageURL: (ctx, event) => event.data,
-					}),
-					target: 'loaded',
-				},
-				onError: 'failed',
-			},
-		},
-		loaded: {type: 'final'},
-		failed: {
-			on: {
-				RETRY: 'fetching',
-			},
-		},
-	},
-})
-
-export const plainSlideshowMachine = Machine(
+export const plainSlideshowMachine = createMachine(
 	{
 		id: 'slideshow',
 		initial: 'idle',
@@ -181,11 +137,7 @@ export const plainSlideshowMachine = Machine(
 				imageURLs: ctx =>
 					ctx.fileIDs.map(id =>
 						spawn(
-							ImageLoadingMachine.withContext({
-								storage: ctx.storage,
-								userID: ctx.userID,
-								fileID: id,
-							}),
+							fetchImageURL(ctx.userID, id),
 							{
 								name: id,
 								sync: true,
@@ -201,7 +153,7 @@ export const plainSlideshowMachine = Machine(
 	},
 )
 
-export const profileMenuMachine = Machine({
+export const profileMenuMachine = createMachine({
 	id: 'profile-menu',
 	initial: 'closed',
 	states: {
@@ -255,7 +207,7 @@ async function fetchGravatarThumbnail(email) {
 		else throw new UnreachableGravatarProfileError(email, error?.response)
 	}
 }
-export const gravatarMachine = Machine({
+export const gravatarMachine = createMachine({
 	id: 'gravatar',
 	initial: 'idle',
 	context: {url: null, error: null},
@@ -306,7 +258,7 @@ export const gravatarMachine = Machine({
 	},
 })
 
-export const newCharacterMachine = Machine(
+export const newCharacterMachine = createMachine(
 	{
 		id: 'new-character',
 		initial: 'idle',

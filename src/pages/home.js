@@ -1,60 +1,52 @@
-import {useAuth, useFirestore, useFirestoreDoc} from 'reactfire'
-import {motion} from 'framer-motion'
-import {Text} from '@fluentui/react'
-import 'wicg-inert'
-import '../styles/profile-menu.css'
-import {ProfileMenu, ProfileMenuItem} from '../components/profile-menu'
-import {
-	auth,
-	clearFirestoreCache,
-	createDocumentResource,
-	firestore,
-	useDocumentResource,
-	useUser,
-} from '../shared/firebase'
-import {colors} from '../shared/theme'
-import {ActionButton} from '../components/action-button'
+import {Suspense} from 'react'
+
 import {useHistory} from 'react-router-dom'
+import {motion} from 'framer-motion'
+import {Text, Spinner} from '@fluentui/react'
+
+import {Center} from '../components/center'
+import {ActionButton} from '../components/action-button'
 import {CharacterCard} from '../components/CharacterCard'
-import {useEffect, useMemo, Suspense} from 'react'
+import {ProfileMenu, ProfileMenuItem} from '../components/profile-menu'
 
-let ref = firestore.collection('users').doc('qyn462H3paOebIjHGqyXlIRJrfl1')
-let resource = createDocumentResource(ref)
+import {colors} from '../shared/theme'
+import {auth, firestore, useUser} from '../shared/firebase.js'
+import {createDocumentResource, useDocumentResource} from '../shared/resources.js'
 
-export function Home() {
-	const user = useUser()
-	const ref = firestore.collection('users').doc(user.uid)
-	const resource = createDocumentResource(ref)
-	return (
-		<Suspense fallback={<p>Getting user characters</p>}>
-			<HomePage documentRef={ref} resource={resource} />
-		</Suspense>
-	)
-}
+import '../styles/profile-menu.css'
+import 'wicg-inert'
 
-function HomePage({documentRef, resource}) {
-	const user = useUser()
+/**
+ * @typedef {{
+ *   characterID: string,
+ *   files: [string],
+ *   name: string,
+ *   story: string
+ * }} Character
+ * @typedef {{characters: [Character]}} UserData
+ */
 
-	const history = useHistory()
-	function openNewCharacterPage() {
-		history.push('/new-character')
-	}
+/**
+ * Renders a list of `<CharacterCard>`'s from a document and a resource.
+ * @param {{
+ * 	documentRef: DocumentReference<UserData>,
+ * 	resource: ResourceReader<UserData>
+ * }} props
+ * @returns {JSX.Element|[JSX.Element]}
+ * @constructor
+ */
+function CharacterCardList({userID, documentRef, resource}) {
+	const {characters} = useDocumentResource(documentRef, resource)
 
-	function signOut() {
-		auth.signOut().then(() => {
-			history.push('/login')
-		})
-	}
-
-	const document = useDocumentResource(documentRef, resource)
-	console.log(document)
-	const {characters} = document
-	let posts = []
-	for (const character of characters) posts.push(<CharacterCard character={character} />)
-
-	if (!posts.length)
+	if (characters.length > 0) {
+		// Render all the Character Cards.
+		const characterCards = []
+		for (const character of characters) characterCards.push(<CharacterCard userID={userID} character={character} />)
+		return characterCards
+	} else {
+		// Inform the user of how to create a character.
 		// TODO: Add alt for pride-drawing.svg
-		posts = (
+		return (
 			<div
 				style={{
 					width: '100%',
@@ -71,6 +63,31 @@ function HomePage({documentRef, resource}) {
 				</Text>
 			</div>
 		)
+	}
+}
+
+/**
+ * Home page
+ * @returns {JSX.Element}
+ * @constructor
+ */
+export function Home() {
+	const user = useUser()
+
+	/** @type {DocumentReference<UserData>} */
+	const ref = firestore.collection('users').doc(user.uid)
+	const resource = createDocumentResource(ref)
+
+	const history = useHistory()
+	function openNewCharacterPage() {
+		history.push('/new-character')
+	}
+
+	function signOut() {
+		auth.signOut().then(() => {
+			history.push('/login')
+		})
+	}
 
 	return (
 		<motion.div layout style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -85,7 +102,19 @@ function HomePage({documentRef, resource}) {
 					<ProfileMenuItem onClick={signOut}>Sign Out</ProfileMenuItem>
 				</ProfileMenu>
 			</header>
-			<main style={{flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>{posts}</main>
+
+			<main style={{flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+				<Suspense
+					fallback={
+						<Center>
+							<Spinner label="Loading your characters..." />
+						</Center>
+					}
+				>
+					<CharacterCardList userID={user.uid} documentRef={ref} resource={resource} />
+				</Suspense>
+			</main>
+
 			<section style={{position: 'fixed', bottom: 0, left: 0, padding: 10}}>
 				<ActionButton variant="round" iconName="Add" onClick={openNewCharacterPage}>
 					New

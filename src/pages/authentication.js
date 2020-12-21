@@ -3,13 +3,12 @@ import {useState} from 'react'
 
 import {DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField} from '@fluentui/react'
 import {Link as RouterLink} from 'react-router-dom'
-import * as firebase from 'firebase'
-import {Center} from '../components/center'
-import {Notifications} from '../components/notifications'
+import {Center} from '../components/center.js'
+import {Notifications} from '../components/notifications.js'
 import {motion} from 'framer-motion'
-import {transitions} from '../shared/config'
+import {transitions} from '../shared/config.js'
+import {firestore, auth, provider as googleProvider} from '../shared/firebase.js'
 
-const googleProvider = new firebase.auth.GoogleAuthProvider()
 const initialStatus = {type: 'idle', data: null}
 
 const pageData = {
@@ -53,7 +52,7 @@ const pageData = {
 				user.updateProfile({
 					displayName: name,
 				})
-				firebase.firestore().collection('users').doc(user.uid).set({
+				firestore.collection('users').doc(user.uid).set({
 					characters: {},
 				})
 			})
@@ -85,7 +84,6 @@ const buttonVariants = {
 }
 
 function AuthenticationPage({type}) {
-	const auth = useAuth()
 	const [status, setStatus] = useState(initialStatus)
 
 	function resetStatus() {
