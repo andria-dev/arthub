@@ -1,0 +1,61 @@
+.ActionButton {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+	height: 51px;
+
+	color: var(--real-orange);
+	border: none;
+	cursor: pointer;
+
+	transition: box-shadow 0.12s ease-out;
+}
+
+/* Has Text Content */
+.ActionButton--content {
+	width: 111px;
+}
+.ActionButton [data-icon-name] {
+	font-size: 30px;
+	color: var(--real-orange);
+}
+.ActionButton [data-icon-name='Back']:not(:last-child) {
+	margin-right: 15px;
+}
+
+/* TODO: Add hover/active styles for each */
+/* ROUND */
+.ActionButton[class*='ActionButton--round'] {
+	border-radius: 26px;
+}
+.ActionButton--round-orange {
+	background: var(--real-orange);
+	box-shadow: var(--orange-shadow) 0 5px 7px 0;
+}
+.ActionButton--round-orange:focus {
+	outline: none;
+	box-shadow: 0 0 0px 6px var(--orange);
+}
+.ActionButton--round-orange [data-icon-name] {
+	color: var(--light-orange);
+}
+.ActionButton--round-light-orange {
+	background: var(--light-orange);
+}
+.ActionButton--round-light-orange:focus {
+	outline: none;
+	box-shadow: 0 0 0 1px var(--real-orange);
+}
+
+/* FLAT */
+.ActionButton[class*='ActionButton--flat'] {
+	background: transparent;
+}
+.ActionButton--flat-danger,
+.ActionButton--flat-danger [data-icon-name] {
+	color: var(--danger);
+}
+.ActionButton--flat-pink,
+.ActionButton--flat-pink [data-icon-name] {
+	color: var(--real-pink);
+}

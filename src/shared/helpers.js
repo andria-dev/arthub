@@ -26,8 +26,8 @@
  * forEachNonDescendantTree(modal, element => element.inert = true)
  * ````
  *
- * @param element
- * @param callback
+ * @param {Element} element
+ * @param {function(Element)} callback
  */
 export function forEachNonDescendantTree(element, callback) {
 	let currentElement = element

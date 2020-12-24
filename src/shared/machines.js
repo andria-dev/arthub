@@ -1,13 +1,10 @@
-import {assign, createMachine, spawn} from 'xstate'
+import {assign, createMachine} from 'xstate'
 import gravatar from 'gravatar'
 import {v1 as uuidv1} from 'uuid'
 
-import {corsAnywhere} from './firebase'
-import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
-
-// TODO: remove this and use src/shared/firebase.js
 import * as firebase from 'firebase'
-import {fetchImageURL} from './resources'
+import {firestore, storage, corsAnywhere} from './firebase.js'
+import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
 
 export const uploadSlideshowMachine = createMachine(
 	{
@@ -91,16 +88,13 @@ export const plainSlideshowMachine = createMachine(
 		initial: 'idle',
 		context: {
 			currentPage: 0,
-			fileIDs: [],
-			imageURLs: [],
-			storage: null,
-			userID: null,
+			numberOfImages: 0,
 		},
 		states: {
 			idle: {
 				always: [
 					{
-						cond: ctx => ctx.fileIDs.length > 0,
+						cond: ctx => ctx.numberOfImages > 0,
 						target: 'photos',
 					},
 					{
@@ -109,7 +103,6 @@ export const plainSlideshowMachine = createMachine(
 				],
 			},
 			photos: {
-				entry: ['spawnImageLoaders'],
 				on: {
 					PREVIOUS: {
 						cond: 'notAtBeginningOfPhotos',
@@ -133,22 +126,10 @@ export const plainSlideshowMachine = createMachine(
 			decrementPage: assign({currentPage: ctx => ctx.currentPage - 1}),
 			decrementPageOrZero: assign({currentPage: ctx => Math.max(ctx.currentPage - 1, 0)}),
 			incrementPage: assign({currentPage: ctx => ctx.currentPage + 1}),
-			spawnImageLoaders: assign({
-				imageURLs: ctx =>
-					ctx.fileIDs.map(id =>
-						spawn(
-							fetchImageURL(ctx.userID, id),
-							{
-								name: id,
-								sync: true,
-							},
-						),
-					),
-			}),
 		},
 		guards: {
 			notAtBeginningOfPhotos: ctx => ctx.currentPage > 0,
-			notAtEndOfPhotos: ctx => ctx.currentPage < ctx.files.length - 1,
+			notAtEndOfPhotos: ctx => ctx.currentPage < ctx.numberOfImages - 1,
 		},
 	},
 )
@@ -182,7 +163,10 @@ export const profileMenuMachine = createMachine({
 	},
 })
 
+const gravatarCache = new Map()
 async function fetchGravatarThumbnail(email) {
+	if (gravatarCache.has(email)) return gravatarCache.get(email)
+
 	const profileURL = gravatar.profile_url(email)
 	try {
 		const data = await corsAnywhere
@@ -197,7 +181,9 @@ async function fetchGravatarThumbnail(email) {
 
 		try {
 			const blob = await corsAnywhere.get(photoURL).blob()
-			return URL.createObjectURL(blob)
+			const url = URL.createObjectURL(blob)
+			gravatarCache.set(email, url)
+			return url
 		} catch (error) {
 			throw new UnreachableGravatarPhotoError(email, error?.response)
 		}
@@ -270,8 +256,6 @@ export const newCharacterMachine = createMachine(
 			story: '',
 			files: [],
 			uid: '',
-			storage: null,
-			firestore: null,
 		},
 		states: {
 			idle: {
@@ -288,7 +272,7 @@ export const newCharacterMachine = createMachine(
 			uploadingFiles: {
 				entry: ['createIDs'],
 				invoke: {
-					src: ({files, fileIDs, storage, uid}, event) => {
+					src: ({files, fileIDs, uid}, event) => {
 						return Promise.all(
 							files.map((file, index) => {
 								const ref = storage.ref().child(`${uid}/${fileIDs[index]}`)
@@ -305,7 +289,7 @@ export const newCharacterMachine = createMachine(
 			},
 			updatingCharacterInfo: {
 				invoke: {
-					src: ({characterID, fileIDs, firestore, name, story, uid}) => {
+					src: ({characterID, fileIDs, name, story, uid}) => {
 						return firestore
 							.collection('users')
 							.doc(uid)
@@ -336,14 +320,14 @@ export const newCharacterMachine = createMachine(
 	},
 	{
 		actions: {
-			getUploadInformation: assign((ctx, {name, story, files, uid, storage, firestore}) => {
-				return {name, story, files, uid, storage, firestore}
+			getUploadInformation: assign((ctx, {name, story, files, uid}) => {
+				return {name, story, files, uid}
 			}),
 			createIDs: assign({
 				fileIDs: ({files}) => files.map(() => uuidv1()),
 			}),
 			setError: assign({error: (ctx, event) => event.data}),
-			cleanUpFileTransfers({fileIDs, storage, uid}) {
+			cleanUpFileTransfers({fileIDs, uid}) {
 				for (const fileID of fileIDs) {
 					storage
 						.ref()

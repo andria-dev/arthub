@@ -1,63 +1,27 @@
 import {useEffect, useState} from 'react'
-import {useHistory} from 'react-router-dom'
+
 import {motion} from 'framer-motion'
-import {Text, Label} from '@fluentui/react'
-import {useId} from '@uifabric/react-hooks'
-import '../styles/new-character-styles.css'
-import {colors} from '../shared/theme'
-import {ActionButton} from '../components/action-button'
 import {debounce} from 'mini-debounce'
-import {useFirestore, useStorage, useUser} from 'reactfire'
-import {useDropzone} from 'react-dropzone'
 import {useMachine} from '@xstate/react'
-import {newCharacterMachine, uploadSlideshowMachine} from '../shared/machines'
-import {FontIcon} from '@fluentui/react'
-import {AutoExpandingTextarea} from '../components/auto-expanding-textarea'
-import {SavingDialog} from '../components/saving-dialog'
+import {useHistory} from 'react-router-dom'
+import {useId} from '@uifabric/react-hooks'
+import {Text, Label, FontIcon} from '@fluentui/react'
+import {useDropzone} from 'react-dropzone'
+
+import {ActionButton} from '../components/action-button.js'
+import {SavingDialog} from '../components/saving-dialog.js'
+import {useUser} from '../shared/firebase.js'
+import {newCharacterMachine, uploadSlideshowMachine} from '../shared/machines.js'
+import {AutoExpandingTextarea} from '../components/auto-expanding-textarea.js'
+import {NextButton, artworkStyles, artworkWrapperStyles, PreviousButton} from '../components/slideshow-parts.js'
+
+import {colors} from '../shared/theme.js'
+import '../styles/new-character.css'
 
 const artistSVGStyles = {
 	width: 298,
 	height: 220,
 	marginBottom: 5,
-}
-const fadeStyles = {
-	position: 'absolute',
-	bottom: 0,
-	left: 0,
-	width: '100%',
-	height: 96,
-	background: 'linear-gradient(180deg, transparent 0%, hsla(0, 0%, 100%, 0.85) 100%)',
-	pointerEvents: 'none',
-}
-const previewWrapperStyles = {
-	position: 'relative',
-	backgroundColor: colors.lightOrange,
-	width: '100%',
-	height: 262,
-	display: 'flex',
-	justifyContent: 'center',
-	alignItems: 'center',
-}
-const previewStyles = {
-	objectFit: 'contain',
-	maxWidth: '100%',
-	maxHeight: '100%',
-}
-const previousButtonStyles = {
-	position: 'absolute',
-	top: 0,
-	left: 0,
-	width: 46,
-	height: 46,
-	borderBottomRightRadius: 8,
-}
-const nextButtonStyles = {
-	position: 'absolute',
-	bottom: 0,
-	right: 0,
-	width: 46,
-	height: 46,
-	borderTopLeftRadius: 8,
 }
 const removeButtonStyles = {
 	position: 'absolute',
@@ -65,6 +29,7 @@ const removeButtonStyles = {
 	right: 0,
 	width: 46,
 	height: 46,
+	borderRadius: 0,
 	borderBottomLeftRadius: 8,
 }
 
@@ -129,29 +94,8 @@ function useSlideshow() {
 		},
 	})
 
-	/* TODO: style buttons */
-	const previousButton = (
-		<ActionButton
-			iconName="Back"
-			variant="bold-orange"
-			type="button"
-			title="Previous"
-			aria-label="Previous"
-			onClick={() => send('PREVIOUS')}
-			style={previousButtonStyles}
-		/>
-	)
-	const nextButton = (
-		<ActionButton
-			iconName="Forward"
-			variant="bold-orange"
-			type="button"
-			title="Next"
-			aria-label="Next"
-			onClick={() => send('NEXT')}
-			style={nextButtonStyles}
-		/>
-	)
+	const previousButton = <PreviousButton onClick={() => send('PREVIOUS')} />
+	const nextButton = <NextButton onClick={() => send('NEXT')} />
 
 	let slideshowSection
 	if (state.matches('noPhotos'))
@@ -171,13 +115,12 @@ function useSlideshow() {
 					className="drop-target"
 					{...dropzone.getRootProps({style: artistSVGStyles})}
 				/>
-				<div style={fadeStyles} />
 			</div>
 		)
 	else if (state.matches('newPhoto'))
 		// TODO: Make drop target accessible
 		slideshowSection = (
-			<div style={previewWrapperStyles}>
+			<div style={artworkWrapperStyles}>
 				{previousButton}
 				<FontIcon
 					iconName="Add"
@@ -188,12 +131,12 @@ function useSlideshow() {
 		)
 	else if (state.matches('photos'))
 		slideshowSection = (
-			<div style={previewWrapperStyles}>
+			<div style={artworkWrapperStyles}>
 				{state.context.currentPage > 0 && previousButton}
-				<img src={state.context.files[state.context.currentPage].preview} alt="" style={previewStyles} />
+				<img src={state.context.files[state.context.currentPage].preview} alt="" style={artworkStyles} />
 				<ActionButton
 					iconName="Delete"
-					variant="bold-orange"
+					variant="round-orange"
 					type="button"
 					title="Remove photo"
 					aria-label="Remove photo"
@@ -242,17 +185,13 @@ function useSlideshow() {
 export function NewCharacter() {
 	const nameFieldID = useId('name')
 	const storyFieldID = useId('character-story')
-	const history = useHistory()
 
+	const user = useUser()
 	const [name, setName] = useState(localStorage.getItem('character-name') ?? '')
 	const [story, setStory] = useState(localStorage.getItem('character-story') ?? '')
-
-	const firestore = useFirestore()
-	const storage = useStorage()
-	const user = useUser()
-
 	const {getInputProps, slideshowSection, dropMessage, dropID, files} = useSlideshow()
 
+	const history = useHistory()
 	function cancel() {
 		clearStorage()
 		history.replace('/')
@@ -261,7 +200,7 @@ export function NewCharacter() {
 	const [saveState, send] = useMachine(newCharacterMachine)
 	function save(event) {
 		event.preventDefault()
-		send('SAVE', {name, story, files, uid: user.uid, storage, firestore})
+		send('SAVE', {name, story, files, uid: user.uid})
 	}
 
 	useEffect(() => {
@@ -269,7 +208,7 @@ export function NewCharacter() {
 			clearStorage()
 			history.push(`/character/${saveState.context.characterID}`)
 		}
-	}, [saveState.value, saveState.context.characterID, history, saveState])
+	}, [history, saveState])
 
 	return (
 		<motion.div layout style={{height: '100%'}}>
@@ -294,7 +233,7 @@ export function NewCharacter() {
 							<NewCharacterInput
 								id={nameFieldID}
 								label="Name"
-								placeholder="Imogen Winchester"
+								placeholder="Lumiére"
 								onChange={createValueStorer('character-name', setName)}
 								value={name}
 								required

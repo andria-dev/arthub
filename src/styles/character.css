@@ -1,12 +1,16 @@
 .Character__name {
 	width: 100%;
 	padding: 0;
-	color: var(--dark);
-	line-height: 25px;
+	margin-bottom: 10px;
 
-	font-size: 20px;
+	color: var(--dark);
+
+	font-size: 40px;
 	font-family: 'Nunito Sans', sans-serif;
 	font-weight: 500;
+	line-height: 40px;
+	text-align: center;
+
 	border: none;
 	box-shadow: none;
 }

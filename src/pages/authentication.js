@@ -1,12 +1,12 @@
-import {useAuth} from 'reactfire'
 import {useState} from 'react'
 
-import {DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField} from '@fluentui/react'
-import {Link as RouterLink} from 'react-router-dom'
-import {Center} from '../components/center.js'
-import {Notifications} from '../components/notifications.js'
 import {motion} from 'framer-motion'
-import {transitions} from '../shared/config.js'
+import {Link as RouterLink} from 'react-router-dom'
+import {DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField} from '@fluentui/react'
+
+import {Center} from '../components/center.js'
+import {transitions} from '../shared/theme.js'
+import {Notifications} from '../components/notifications.js'
 import {firestore, auth, provider as googleProvider} from '../shared/firebase.js'
 
 const initialStatus = {type: 'idle', data: null}

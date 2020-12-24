@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import {storage} from './firebase.js'
 
-const imageDataURLMap = new Map()
+const imageDataURLCache = new Map()
 /**
  * Retrieves the URL of an image from a file ID then fetches the image and caches then returns the data URL.
  * @param {string} userID
@@ -9,14 +9,14 @@ const imageDataURLMap = new Map()
  * @returns {Promise<string|any>}
  */
 export async function fetchImageURL(userID, fileID) {
-	if (imageDataURLMap.has(fileID)) return imageDataURLMap.get(fileID)
+	if (imageDataURLCache.has(fileID)) return imageDataURLCache.get(fileID)
 
 	const url = await storage.ref().child(`${userID}/${fileID}`).getDownloadURL()
 	return await fetch(url)
 		.then(res => res.blob())
 		.then(blob => {
 			const dataURL = URL.createObjectURL(blob)
-			imageDataURLMap.set(fileID, dataURL)
+			imageDataURLCache.set(fileID, dataURL)
 			return dataURL
 		})
 }
@@ -27,16 +27,17 @@ export async function fetchImageURL(userID, fileID) {
  *
  * @template V
  * @param {{status: string, suspender: Promise, result: V}} resource
- * @returns {V | undefined}
+ * @returns {V}
  */
 export function readResource({status, suspender, result}) {
 	switch (status) {
 		case 'loading':
 			throw suspender
-		case 'success':
-			return result
 		case 'error':
 			throw result
+		case 'success':
+		default:
+			return result
 	}
 }
 
@@ -79,7 +80,8 @@ export function createResource(promise) {
  * During the time it takes for the first value of the subscription to come through, the resource is suspended.
  *
  * @template V
- * @param {Callback} subscribe
+ * @template E
+ * @param {function(function(V, E))} subscribe
  * @returns {ResourceReader<V>}
  */
 export function createResourceFromSubscription(subscribe) {
@@ -115,6 +117,7 @@ export function createResourceFromSubscription(subscribe) {
  * @returns {ResourceReader<V>}
  */
 export function createDocumentResource(documentRef) {
+	console.log('Creating a new document resource')
 	return createResource(documentRef.get().then(doc => doc.data()))
 }
 
@@ -125,13 +128,19 @@ export function createDocumentResource(documentRef) {
  * @template V
  * @param {DocumentReference<V>} documentRef
  * @param {ResourceReader<V>} resource
- * @returns {V | undefined}
+ * @returns {V}
  */
 export function useDocumentResource(documentRef, resource) {
 	const [result, setResult] = useState(resource.read())
 
 	useEffect(() => {
+		let isFirst = true
 		return documentRef.onSnapshot((snapshot, error) => {
+			if (isFirst) {
+				isFirst = false
+				return
+			}
+
 			if (error) console.warn(error)
 			else setResult(snapshot.data())
 		})

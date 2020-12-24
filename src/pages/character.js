@@ -1,108 +1,73 @@
 import {useMemo} from 'react'
 
-import xss from 'xss'
-import marked from 'marked'
-import {motion} from 'framer-motion'
-import {Text} from '@fluentui/react'
-import {useMachine, useService} from '@xstate/react'
+import {useMachine} from '@xstate/react'
 import {useParams, useHistory} from 'react-router-dom'
-import {useFirestore, useFirestoreDoc, useStorage, useUser} from 'reactfire'
 
-import {colors} from '../shared/theme'
-import {ActionButton} from '../components/action-button'
-import {plainSlideshowMachine} from '../shared/machines'
+import {firestore, useCharacterWithImages, useUser, withUserResource} from '../shared/firebase.js'
+import {ActionButton} from '../components/action-button.js'
+import {plainSlideshowMachine} from '../shared/machines.js'
+import {createDocumentResource, createResource, fetchImageURL, useDocumentResource} from '../shared/resources.js'
+import {artworkStyles, artworkWrapperStyles, NextButton, PreviousButton} from '../components/slideshow-parts.js'
+import {CharacterStory, CharacterLayout} from '../components/character-parts.js'
 
-function CharacterSlideshow({service}) {
-	const [state, send] = useService(service)
+import '../styles/character.css'
 
-	switch (state.value) {
-		case 'fetching':
-			return <Text>Loading...</Text>
+function CharacterSlideshow({context, send, resources}) {
+	if (resources.length === 0) return null
 
-		case 'loaded':
-			// TODO: add real alt to character art
-			return <img src={state.context.imageURL} alt="Artwork" />
+	const url = resources[context.currentPage].read()
+	const previous = <PreviousButton key="prev" onClick={() => send('PREVIOUS')} />
+	const next = <NextButton key="next" onClick={() => send('NEXT')} />
 
-		case 'failed':
-		default:
-			// TODO: add real failure message and retry button
-			return <Text>Failed</Text>
-	}
+	// TODO: add real alt from character data
+	return (
+		<div style={artworkWrapperStyles}>
+			{context.currentPage > 0 ? previous : null}
+			<img key="img" src={url} alt="Artwork" style={artworkStyles} />
+			{context.currentPage < context.numberOfImages - 1 ? next : null}
+		</div>
+	)
 }
 
-export function Character() {
-	const history = useHistory()
-	const {characterID} = useParams()
+/**
+ * @param {{userRef: DocumentRef<UserData>, resource: ResourceReader<UserData>}} props
+ * @constructor
+ */
+export function CharacterPage() {
+	const {characterID: id} = useParams()
+	const {character, imageResources} = useCharacterWithImages(id)
 
+	const history = useHistory()
 	function back() {
 		history.replace('/')
 	}
 
-	const storage = useStorage()
-	const user = useUser()
-	const userRef = useFirestore().collection('users').doc(user.uid)
-	const userInfo = useFirestoreDoc(userRef)
-
-	const character = useMemo(() => {
-		const characters = userInfo.data().characters
-		return characters.find(character => character.id === characterID)
-	}, [userInfo, characterID])
-
-	const [state, send, interpreter] = useMachine(
+	const [state, send] = useMachine(
 		plainSlideshowMachine.withContext({
 			...plainSlideshowMachine.context,
-			storage,
-			userID: user.uid,
-			fileIDs: character.files,
+			numberOfImages: imageResources.length,
 		}),
 	)
 
-	let slideshow = null
-	if (state.matches('photos')) {
-		const imageService = state.context.imageURLs[state.context.currentPage]
-
-		if (imageService) slideshow = <CharacterSlideshow service={imageService} />
-	}
-
 	return (
-		<motion.div layout style={{height: '100%'}}>
-			<main style={{height: 'calc(100% - 62px)'}}>
-				<div
-					style={{
-						display: 'flex',
-						flexDirection: 'column',
-						padding: '0 0 45px 0',
-						height: 'calc(100% - 45px)',
-						overflowY: 'scroll',
-					}}
-				>
-					<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>{slideshow}</div>
-
-					<div style={{padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-						<h2 className="Character__name">{character.name}</h2>
-						<div className="Character__story" dangerouslySetInnerHTML={{__html: xss(marked(character.story))}} />
-					</div>
-				</div>
-				<section
-					style={{
-						position: 'fixed',
-						display: 'flex',
-						justifyContent: 'space-evenly',
-						alignItems: 'center',
-						width: '100%',
-						height: 62,
-						backgroundColor: 'white',
-						boxShadow: `${colors.lightOrange} 0 -2px 7px 0`,
-					}}
-				>
-					<ActionButton variant="flat" iconName="Back" onClick={back} type="button">
+		<CharacterLayout
+			mode="display"
+			slideshow={<CharacterSlideshow context={state.context} send={send} resources={imageResources} />}
+			name={<h1 className="Character__name">{character.name}</h1>}
+			story={<CharacterStory story={character.story} />}
+			actions={
+				<>
+					<ActionButton key="delete" variant="flat-danger" iconName="Trash" onClick={() => {}} type="button">
+						Delete
+					</ActionButton>
+					<ActionButton key="back" variant="flat" iconName="Back" onClick={back} type="button">
 						Back
 					</ActionButton>
-					<ActionButton variant="flat" iconName="Edit" type="submit">
+					<ActionButton key="edit" variant="flat" iconName="Edit" type="button">
 						Edit
 					</ActionButton>
-				</section>
-			</main>
-		</motion.div>
+				</>
+			}
+		/>
 	)
 }

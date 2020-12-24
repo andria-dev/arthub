@@ -1,12 +1,13 @@
-import {colors} from '../shared/theme'
-import {PROFILE_SIZE, ProfilePhoto} from './profile-photo'
-import {AnimatePresence, motion} from 'framer-motion'
-import {useMachine} from '@xstate/react'
 import {useEffect, useRef} from 'react'
-import {forEachNonDescendantTree} from '../shared/helpers'
-import {transitions} from '../shared/config'
+
 import {Text} from '@fluentui/react'
-import {profileMenuMachine} from '../shared/machines'
+import {useMachine} from '@xstate/react'
+import {AnimatePresence, motion} from 'framer-motion'
+
+import {colors, transitions} from '../shared/theme.js'
+import {PROFILE_SIZE, ProfilePhoto} from './profile-photo.js'
+import {forEachNonDescendantTree} from '../shared/helpers.js'
+import {profileMenuMachine} from '../shared/machines.js'
 
 const profileMenuStyles = {
 	position: 'absolute',

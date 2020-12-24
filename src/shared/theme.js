@@ -49,6 +49,20 @@ export const theme = createTheme({
 	},
 })
 
+export const transitions = {
+	smooth: {
+		type: 'spring',
+		mass: 0.5,
+		damping: 20,
+	},
+	menu: {
+		type: 'spring',
+		stiffness: 500,
+		damping: 60,
+		mass: 1,
+	},
+}
+
 export const colors = {
 	lightPink: 'hsl(353, 82%, 98%)',
 	pink: 'hsl(350, 78%, 91%)',
@@ -59,6 +73,9 @@ export const colors = {
 	orangeShadow: 'hsla(19, 72%, 75%, 0.25)',
 	dark: 'hsl(0, 0%, 10%)',
 	notAsDark: 'hsl(0, 0%, 35%)',
+	light: 'hsl(0, 0%, 99%)',
+	lightShadow: 'hsla(0, 0%, 0%, 0.1)',
+	danger: 'hsl(0, 87%, 41%)',
 }
 
 for (const colorName in colors) {

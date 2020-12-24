@@ -1,11 +1,17 @@
+import {useContext, useEffect, createContext, useState, useMemo} from 'react'
+
 import ky from 'ky'
 import firebase from 'firebase'
 import 'firebase/firestore'
 import 'firebase/storage'
-import {Spinner} from '@fluentui/react'
-import {Center} from '../components/center'
-import {useContext, useEffect, createContext, useState, useMemo, useReducer} from 'react'
-import {createResourceFromSubscription} from './resources'
+
+import {
+	createDocumentResource,
+	createResource,
+	createResourceFromSubscription,
+	fetchImageURL,
+	useDocumentResource,
+} from './resources.js'
 
 export const config = {
 	apiKey: 'AIzaSyDRi5_luFxHRmlAZzpWB6MXXozfc3PReyE',
@@ -29,8 +35,27 @@ export const storage = firebase.storage()
 export const auth = firebase.auth()
 export const provider = new firebase.auth.GoogleAuthProvider()
 
-const FirebaseContext = createContext({})
-function FirebaseResources({resource, children}) {
+/**
+ * @typedef {Object} FirebaseData
+ * @property {firebase.User | null} user
+ * @property {[Character]} characters
+ */
+
+/** @type {Context<FirebaseData>} */
+const FirebaseContext = createContext({user: null, characters: []})
+
+function FirebaseCharactersResource({user, resource, children}) {
+	const {characters} = resource.read()
+	const value = useMemo(() => ({user, characters}), [user, characters])
+	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
+}
+
+/**
+ * @param {{resource: ResourceReader<firebase.User>, children: any}} props
+ * @returns {JSX.Element}
+ * @constructor
+ */
+function FirebaseUserResource({resource, children}) {
 	const [user, setUser] = useState(resource.read())
 
 	useEffect(() => {
@@ -40,24 +65,57 @@ function FirebaseResources({resource, children}) {
 		})
 	}, [])
 
-	const value = useMemo(() => ({user}), [user])
-	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
+	const userDocumentResource = useMemo(() => {
+		return createDocumentResource(firestore.collection('users').doc(user.uid))
+	}, [user.uid])
+
+	return (
+		<FirebaseCharactersResource user={user} resource={userDocumentResource}>
+			{children}
+		</FirebaseCharactersResource>
+	)
 }
 
+/**
+ * Provides access to active Firebase values.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 export function FirebaseProvider({children}) {
 	const resource = createResourceFromSubscription(auth.onAuthStateChanged.bind(auth))
-	return <FirebaseResources resource={resource}>{children}</FirebaseResources>
+	return <FirebaseUserResource resource={resource}>{children}</FirebaseUserResource>
 }
 
+/** @returns {firebase.User} */
 export function useUser() {
 	const state = useContext(FirebaseContext)
 	return state.user
 }
 
-export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})
-
-// Workaround from https://github.com/FirebaseExtended/reactfire/discussions/228#discussioncomment-182830
-export function clearFirestoreCache() {
-	const map = window._reactFirePreloadedObservables
-	for (const key of map.keys()) if (key.includes('firestore')) map.delete(key)
+export function useCharacters() {
+	const state = useContext(FirebaseContext)
+	return state.characters
 }
+
+/**
+ * Takes a character's ID and user document resource and retrieves the specified character.
+ * After that, each image is fetched and a resource is created for each fetch
+ * @param {string} id The character's ID.
+ * @param {ResourceReader<UserData>} resource A resource that contains the user's account data.
+ * @returns {{
+ * 	character: Character,
+ * 	imageResources: [ResourceReader<string>]
+ * }}
+ */
+export function useCharacterWithImages(id) {
+	const user = useUser()
+	const characters = useCharacters()
+
+	return useMemo(() => {
+		const character = characters.find(character => character.id === id)
+		const imageResources = character.files.map(id => createResource(fetchImageURL(user.uid, id)))
+		return {character, imageResources}
+	}, [characters, user.uid, id])
+}
+
+export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})

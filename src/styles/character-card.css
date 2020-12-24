@@ -40,8 +40,8 @@
 
 	color: white;
 
-	font-size: 20px;
-	font-family: 'Inter', sans-serif;
+	font-size: 25px;
+	font-family: 'Nunito Sans', sans-serif;
 	text-align: center;
 	text-overflow: ellipsis;
 
@@ -87,4 +87,17 @@
 
 .CharacterCard__view-button:focus {
 	outline-offset: -2px;
+}
+
+.CharacterCard__letter {
+	display: block;
+	height: 100%;
+	width: 100%;
+
+	color: var(--real-pink);
+	background-color: var(--pink);
+
+	font-size: 170px;
+	text-align: center;
+	line-height: 220px;
 }
