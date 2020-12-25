@@ -8,14 +8,13 @@ import {FadeLayout} from '../components/page-transitions.js'
 export function Landing() {
 	return (
 		<FadeLayout style={{height: '100vh'}}>
-
-		<Center>
-			<motion.div layout>
-				<Link as={RouterLink} to="/">
-					Open App
-				</Link>
-			</motion.div>
-		</Center>
+			<Center>
+				<motion.div layout>
+					<Link as={RouterLink} to="/">
+						Open App
+					</Link>
+				</motion.div>
+			</Center>
 		</FadeLayout>
 	)
 }
