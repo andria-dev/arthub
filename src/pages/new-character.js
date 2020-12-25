@@ -14,6 +14,7 @@ import {useUser} from '../shared/firebase.js'
 import {newCharacterMachine, uploadSlideshowMachine} from '../shared/machines.js'
 import {AutoExpandingTextarea} from '../components/auto-expanding-textarea.js'
 import {NextButton, artworkStyles, artworkWrapperStyles, PreviousButton} from '../components/slideshow-parts.js'
+import {CharacterLayout} from '../components/character-parts.js'
 
 import {colors} from '../shared/theme.js'
 import '../styles/new-character.css'
@@ -211,71 +212,53 @@ export function NewCharacter() {
 	}, [history, saveState])
 
 	return (
-		<motion.div layout style={{height: '100%'}}>
-			<form onSubmit={save} style={{display: 'inline'}}>
-				<main style={{height: 'calc(100% - 62px)'}}>
-					<div
-						style={{
-							display: 'flex',
-							flexDirection: 'column',
-							padding: '0 0 45px 0',
-							height: 'calc(100% - 45px)',
-							overflowY: 'scroll',
-						}}
-					>
-						<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
-							{slideshowSection}
-							<input id={dropID} {...getInputProps()} />
-							{dropMessage}
-						</div>
-
-						<div style={{padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-							<NewCharacterInput
-								id={nameFieldID}
-								label="Name"
-								placeholder="Lumiére"
-								onChange={createValueStorer('character-name', setName)}
-								value={name}
-								required
-							/>
-							<NewCharacterInput
-								id={storyFieldID}
-								label="Character Story"
-								placeholder="Tell your characters story and explain their background..."
-								className="CharacterStoryInput"
-								onChange={createValueStorer('character-story', setStory)}
-								value={story}
-								multiline
-								required
-							/>
-						</div>
-					</div>
-				</main>
-				<section
-					style={{
-						position: 'fixed',
-						display: 'flex',
-						justifyContent: 'space-evenly',
-						alignItems: 'center',
-						width: '100%',
-						height: 62,
-						backgroundColor: 'white',
-						boxShadow: `${colors.lightOrange} 0 -2px 7px 0`,
-					}}
-				>
-					<ActionButton variant="flat" iconName="Back" onClick={cancel} type="button">
+		<CharacterLayout
+			mode="edit"
+			onSubmit={save}
+			slideshow={
+				<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
+					{slideshowSection}
+					<input id={dropID} {...getInputProps()} />
+					{dropMessage}
+				</div>
+			}
+			name={
+				<NewCharacterInput
+					id={nameFieldID}
+					label="Name"
+					placeholder="Lumiére"
+					onChange={createValueStorer('character-name', setName)}
+					value={name}
+					required
+				/>
+			}
+			story={
+				<NewCharacterInput
+					id={storyFieldID}
+					label="Character Story"
+					placeholder="Tell your characters story and explain their background..."
+					className="CharacterStoryInput"
+					onChange={createValueStorer('character-story', setStory)}
+					value={story}
+					multiline
+					required
+				/>
+			}
+			actions={
+				<>
+					<ActionButton key="cancel" variant="flat" iconName="Back" onClick={cancel} type="button">
 						Cancel
 					</ActionButton>
-					<ActionButton variant="flat" iconName="Save" type="submit">
+					<ActionButton key="save" variant="flat" iconName="Save" type="submit">
 						Save
 					</ActionButton>
-				</section>
-			</form>
-
+				</>
+			}
+		>
 			<SavingDialog
 				isOpen={['uploadingFiles', 'updatingCharacterInfo', {finished: 'error'}].some(saveState.matches)}
 				status={saveState.value}
 			/>
-		</motion.div>
+		</CharacterLayout>
 	)
 }

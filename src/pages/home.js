@@ -137,7 +137,13 @@ export function Home() {
 	}
 
 	return (
-		<motion.div layout style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+		<motion.div
+			layout
+			style={{height: '100%', display: 'flex', flexDirection: 'column'}}
+			initial={{opacity: 0}}
+			animate={{opacity: 1}}
+			exit={{opacity: 0}}
+		>
 			<ProfileHeader />
 
 			<main style={{flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '95px'}}>

@@ -1,25 +1,4 @@
 import {useEffect, useState} from 'react'
-import {storage} from './firebase.js'
-
-const imageDataURLCache = new Map()
-/**
- * Retrieves the URL of an image from a file ID then fetches the image and caches then returns the data URL.
- * @param {string} userID
- * @param {string} fileID
- * @returns {Promise<string|any>}
- */
-export async function fetchImageURL(userID, fileID) {
-	if (imageDataURLCache.has(fileID)) return imageDataURLCache.get(fileID)
-
-	const url = await storage.ref().child(`${userID}/${fileID}`).getDownloadURL()
-	return await fetch(url)
-		.then(res => res.blob())
-		.then(blob => {
-			const dataURL = URL.createObjectURL(blob)
-			imageDataURLCache.set(fileID, dataURL)
-			return dataURL
-		})
-}
 
 /**
  * This function handles the reading of a resource — suspension, results, and errors.

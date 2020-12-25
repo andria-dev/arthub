@@ -18,6 +18,7 @@ import {CharacterPage} from './pages/character.js'
 
 import * as serviceWorker from './serviceWorker.js'
 import './styles/index.css'
+import {EditCharacterPage} from './pages/edit-character'
 
 loadTheme(theme)
 initializeIcons()
@@ -61,6 +62,7 @@ ReactDOM.render(
 						<PrivateRoute exact as={Home} path="/" />
 						<PrivateRoute exact as={NewCharacter} path="/new-character" />
 						<PrivateRoute exact as={CharacterPage} path="/character/:characterID" />
+						<PrivateRoute exact as={EditCharacterPage} path="/edit-character/:characterID" />
 						<Landing exact path="/landing" />
 						<UnauthenticatedRoute exact as={Login} path="/login" />
 						<UnauthenticatedRoute exact as={Register} path="/register" />

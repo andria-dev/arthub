@@ -1,68 +1,76 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Art Hub
 
-## Available Scripts
+This is a project for hosting your art and being able to write stories and descriptions for them. Along with this you'll be able to privately share the art via a unique URL.
 
-In the project directory, you can run:
+## File structure
 
-### `yarn start`
+After trying the `destiny` npm package for organizing files and realizing it made an even more complicated mess. I decided on a simple structure.
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+All front-end code goes in `src/`.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+- `./pages/` — files that contain routes
+- `./components/` — re-usable React components
+- `./styles/` — only CSS files
+- `./shared/` — non-component modules
+    - _can contain components_ if they are related to the module
 
-### `yarn test`
+## Service Worker
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Currently, the service worker is disabled. If possible, the goal is to make the service worker do the following:
 
-### `yarn build`
+- **Cache images** — artwork, profile photo, etc…
+- Display a page stating that the user is **offline** to prevent user from seeing scary network errors.
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## State management
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+For state management, I opted to use React's Context API as I don't have a lot of global state.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+With this, I'm using Firebase which is notoriously hard to set up with React in a manageable way. This rings even more true in terms of React's new Suspense API as at the time of writing this, there don't appear to be any firebase libraries that fully support the Suspense API. To remedy this I built a few functions and components myself in the `./shared/firebase.js` file.
 
-### `yarn eject`
+- `<FirebaseProvider>` — provides the global state while allowing for use of the Suspense API.
+    - `<FirebaseUserResource>`
+    - `<FirebaseCharactersResource>`
+- `useUser()` — gets the user from context
+- `useCharacters()` — gets the characters from context
+- `async fetchImageURL(userID, fileID)` — downloads the URL for the image, fetches the image, creates a blob, caches the blob in memory, and returns it.
+- `useCharacterWithImages(id)` — gets a specific character from context and creates resources for all of its images
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+To build these, I created some common use functions for the Suspense API in the `./shared/resources.js` file
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `readResource({status, suspender, result})`
+- `createResource(promise)`
+- `createResourceFromSubscription(subscribe)`
+- `createDocumentResource(documentRef)`
+- `useDocumentResource(documentRef, resource)`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+<small>Note, you can read the actual documentation for these functions in the source code above each of them.</small>
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Transitions
 
-## Learn More
+I am using the `framer-motion` package from npm for animation, transitions, and page transitions.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Testing
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+yarn test
+```
 
-### Code Splitting
+This application currently has no tests as it is a gift, and I'm on a time crunch.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+## Formatting
 
-### Analyzing the Bundle Size
+```bash
+yarn format
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+I'm currently using Prettier but would like to switch to ESLint as it is more versatile and supposedly quicker.
 
-### Making a Progressive Web App
+## Running the application
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+```bash
+# For development
+yarn start
 
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+# For production
+yarn build
+```

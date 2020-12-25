@@ -8,6 +8,7 @@ import {Spinner} from '@fluentui/react'
 import {Center} from './center.js'
 import {colors} from '../shared/theme.js'
 import {artworkWrapperStyles} from './slideshow-parts.js'
+import {FadeLayout} from './page-transitions'
 
 export const CharacterStory = memo(({story}) => (
 	<div className="Character__story" dangerouslySetInnerHTML={{__html: xss(marked(story))}} />
@@ -17,16 +18,24 @@ const empty = {}
 /**
  *
  * @param {{
+ *   mode: 'display',
  *   slideshow: JSX.Element,
  *   name: JSX.Element,
  *   story: JSX.Element,
  *   actions: [JSX.Element],
- *   mode: 'display' | 'edit',
- *   onSubmit: function(React.SyntheticEvent)
+ *   children: any,
+ * } | {
+ *   mode: 'edit',
+ *   onSubmit: function(React.SyntheticEvent),
+ *   slideshow: JSX.Element,
+ *   name: JSX.Element,
+ *   story: JSX.Element,
+ *   actions: [JSX.Element],
+ *   children: any,
  * }} props
  * @constructor
  */
-export function CharacterLayout({slideshow, name, story, actions, mode, onSubmit}) {
+export function CharacterLayout({slideshow, name, story, actions, mode, onSubmit, children}) {
 	const content = (
 		<main style={{height: 'calc(100% - 62px)'}}>
 			<div
@@ -74,17 +83,19 @@ export function CharacterLayout({slideshow, name, story, actions, mode, onSubmit
 	let wrapped
 	if (mode === 'display') {
 		wrapped = (
-			<motion.div layout style={{height: '100%'}}>
+			<FadeLayout style={{height: '100%'}}>
 				{content}
-			</motion.div>
+				{children}
+			</FadeLayout>
 		)
 	} else if (mode === 'edit') {
 		wrapped = (
-			<motion.div layout style={{height: '100%'}}>
+			<FadeLayout style={{height: '100%'}}>
 				<form onSubmit={onSubmit} style={{display: 'inline'}}>
 					{content}
 				</form>
-			</motion.div>
+				{children}
+			</FadeLayout>
 		)
 	} else {
 		throw new Error(`Invalid mode '${mode}' is not supported.`)

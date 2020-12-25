@@ -1,8 +1,8 @@
 import {Suspense, useMemo} from 'react'
 import {Link as RouterLink} from 'react-router-dom'
 
-import {useUser} from '../shared/firebase.js'
-import {createResource, fetchImageURL} from '../shared/resources.js'
+import {fetchImageURL, useUser} from '../shared/firebase.js'
+import {createResource} from '../shared/resources.js'
 
 import '../styles/character-card.css'
 import {Center} from './center'

@@ -1,4 +1,4 @@
-import {useContext, useEffect, createContext, useState, useMemo} from 'react'
+import {createContext, useContext, useEffect, useMemo, useState} from 'react'
 
 import ky from 'ky'
 import firebase from 'firebase'
@@ -9,7 +9,6 @@ import {
 	createDocumentResource,
 	createResource,
 	createResourceFromSubscription,
-	fetchImageURL,
 	useDocumentResource,
 } from './resources.js'
 
@@ -45,7 +44,7 @@ export const provider = new firebase.auth.GoogleAuthProvider()
 const FirebaseContext = createContext({user: null, characters: []})
 
 function FirebaseCharactersResource({user, resource, children}) {
-	const {characters} = resource.read()
+	const {characters} = useDocumentResource(firestore.collection('users').doc(user.uid), resource)
 	const value = useMemo(() => ({user, characters}), [user, characters])
 	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
 }
@@ -92,9 +91,33 @@ export function useUser() {
 	return state.user
 }
 
+/**
+ * @returns {[Character]}
+ */
 export function useCharacters() {
 	const state = useContext(FirebaseContext)
 	return state.characters
+}
+
+const imageDataURLCache = new Map()
+
+/**
+ * Retrieves the URL of an image from a file ID then fetches the image and caches then returns the data URL.
+ * @param {string} userID
+ * @param {string} fileID
+ * @returns {Promise<string|any>}
+ */
+export async function fetchImageURL(userID, fileID) {
+	if (imageDataURLCache.has(fileID)) return imageDataURLCache.get(fileID)
+
+	const url = await storage.ref().child(`${userID}/${fileID}`).getDownloadURL()
+	return await fetch(url)
+		.then(res => res.blob())
+		.then(blob => {
+			const dataURL = URL.createObjectURL(blob)
+			imageDataURLCache.set(fileID, dataURL)
+			return dataURL
+		})
 }
 
 /**
@@ -113,7 +136,7 @@ export function useCharacterWithImages(id) {
 
 	return useMemo(() => {
 		const character = characters.find(character => character.id === id)
-		const imageResources = character.files.map(id => createResource(fetchImageURL(user.uid, id)))
+		const imageResources = character?.files?.map(id => createResource(fetchImageURL(user.uid, id))) ?? []
 		return {character, imageResources}
 	}, [characters, user.uid, id])
 }

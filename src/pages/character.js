@@ -3,10 +3,10 @@ import {useMemo} from 'react'
 import {useMachine} from '@xstate/react'
 import {useParams, useHistory} from 'react-router-dom'
 
-import {firestore, useCharacterWithImages, useUser, withUserResource} from '../shared/firebase.js'
+import {fetchImageURL, firestore, useCharacterWithImages, useUser, withUserResource} from '../shared/firebase.js'
 import {ActionButton} from '../components/action-button.js'
 import {plainSlideshowMachine} from '../shared/machines.js'
-import {createDocumentResource, createResource, fetchImageURL, useDocumentResource} from '../shared/resources.js'
+import {createDocumentResource, createResource, useDocumentResource} from '../shared/resources.js'
 import {artworkStyles, artworkWrapperStyles, NextButton, PreviousButton} from '../components/slideshow-parts.js'
 import {CharacterStory, CharacterLayout} from '../components/character-parts.js'
 
@@ -49,6 +49,10 @@ export function CharacterPage() {
 		}),
 	)
 
+	function edit() {
+		history.push(`/edit-character/${id}`)
+	}
+
 	return (
 		<CharacterLayout
 			mode="display"
@@ -63,7 +67,7 @@ export function CharacterPage() {
 					<ActionButton key="back" variant="flat" iconName="Back" onClick={back} type="button">
 						Back
 					</ActionButton>
-					<ActionButton key="edit" variant="flat" iconName="Edit" type="button">
+					<ActionButton key="edit" variant="flat" iconName="Edit" onClick={edit} type="button">
 						Edit
 					</ActionButton>
 				</>

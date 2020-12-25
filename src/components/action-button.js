@@ -9,7 +9,6 @@ import '../styles/action-button.css'
 export function ActionButton({variant, iconName, children, className, ...props}) {
 	return (
 		<button
-			animate
 			className={`ActionButton ActionButton--${variant} ${children ? 'ActionButton--content' : ''} ${className || ''}`}
 			{...props}
 		>
