@@ -333,7 +333,7 @@ export const newCharacterMachine = createMachine(
 						.ref()
 						.child(`${uid}/${fileID}`)
 						.delete()
-						.catch(() => {})
+						.catch(error => console.warn(`Failed to delete art ${uid}/${fileID}:`, error))
 				}
 			},
 		},

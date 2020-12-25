@@ -49,6 +49,29 @@ To build these, I created some common use functions for the Suspense API in the 
 
 I am using the `framer-motion` package from npm for animation, transitions, and page transitions.
 
+## User Stories
+
+- [ ] Create characters with:
+  - [x] A name
+  - [x] A rich-text story (switching to https://github.com/basecamp/trix)
+  - [x] Can upload artwork
+  - [ ] Each work of art can have an `alt`
+- [ ] Edit characters:
+  - [ ] Name
+  - [ ] Rich-text story
+  - [ ] Remove old artwork
+  - [ ] Add new artwork
+  - [ ] Edit alts
+- [x] View character
+  - [x] Name
+  - [x] Rich-text story — not raw markdown or anything else
+  - [x] Artwork
+- [x] Delete character and all related artwork
+- [ ] Sharing
+  - [ ] Share character via unique link
+  - [ ] Share character with time-sensitive link
+  - [ ] Un-share character link
+
 ## Testing
 
 ```bash
