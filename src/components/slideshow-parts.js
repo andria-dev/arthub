@@ -187,29 +187,28 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 					</Center>
 				) : null}
 				{!currentPhoto.scheduledForRemoval ? (
-						<ActionButton
-							key="delete"
-							iconName="Delete"
-							variant="round-orange"
-							type="button"
-							title="Schedule for removal"
-							aria-label="Schedule for removal"
-							onClick={() => send('SCHEDULE_FOR_REMOVAL')}
-							style={removeButtonStyles}
-						/>
-					) : (
-						<ActionButton
-							key="undo"
-							iconName="Undo"
-							variant="round-orange"
-							type="button"
-							title="Cancel removal"
-							aria-label="Cancel removal"
-							onClick={() => send('CANCEL_REMOVAL')}
-							style={removeButtonStyles}
-						/>
-					)
-				}
+					<ActionButton
+						key="delete"
+						iconName="Delete"
+						variant="round-orange"
+						type="button"
+						title="Schedule for removal"
+						aria-label="Schedule for removal"
+						onClick={() => send('SCHEDULE_FOR_REMOVAL')}
+						style={removeButtonStyles}
+					/>
+				) : (
+					<ActionButton
+						key="undo"
+						iconName="Undo"
+						variant="round-orange"
+						type="button"
+						title="Cancel removal"
+						aria-label="Cancel removal"
+						onClick={() => send('CANCEL_REMOVAL')}
+						style={removeButtonStyles}
+					/>
+				)}
 				{nextButton}
 			</div>
 		)
