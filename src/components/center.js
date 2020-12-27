@@ -1,7 +1,7 @@
 import {Stack} from '@fluentui/react'
+import {emptyObject} from '../shared/empty'
 
-const empty = {}
-export function Center({style = empty, ...props}) {
+export function Center({style = emptyObject, ...props}) {
 	return (
 		<Stack
 			verticalAlign="center"

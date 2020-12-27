@@ -28,7 +28,7 @@ export function CharacterCard({character}) {
 	const imageResource = useMemo(() => {
 		if (character.files.length > 0) return createResource(fetchImageURL(uid, character.files[0]))
 		return null
-	}, [character.files])
+	}, [character.files, uid])
 
 	return (
 		<figure className="CharacterCard">

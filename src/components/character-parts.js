@@ -1,21 +1,23 @@
-import {memo, Suspense} from 'react'
+import {memo, Suspense, useState} from 'react'
 
 import xss from 'xss'
 import marked from 'marked'
-import {motion} from 'framer-motion'
-import {Spinner} from '@fluentui/react'
+import {Label, Spinner} from '@fluentui/react'
 
 import {Center} from './center.js'
 import {colors} from '../shared/theme.js'
 import {artworkWrapperStyles} from './slideshow-parts.js'
 import {FadeLayout} from './page-transitions'
+import {AutoExpandingTextarea} from './auto-expanding-textarea'
+import {debounce} from 'mini-debounce'
+import {useId} from '@uifabric/react-hooks'
 
 export const CharacterStory = memo(({story}) => (
 	<div className="Character__story" dangerouslySetInnerHTML={{__html: xss(marked(story))}} />
 ))
 
-const empty = {}
 /**
+ * A component to facilitate in reduction of repeating layout code for pages that display character info.
  *
  * @param {{
  *   mode: 'display',
@@ -102,4 +104,76 @@ export function CharacterLayout({slideshow, name, story, actions, mode, onSubmit
 	}
 
 	return wrapped
+}
+
+export function CharacterInput({className, multiline, label, ...props}) {
+	const [status, setStatus] = useState('idle')
+	const focusHandlers = {
+		onFocus() {
+			setStatus('focus')
+		},
+		onBlur() {
+			setStatus('idle')
+		},
+	}
+
+	return (
+		<div className={'CharacterInput ' + (className ?? '')}>
+			{label && (
+				<Label htmlFor={props.id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>
+					{label}
+				</Label>
+			)}
+			{multiline ? (
+				<AutoExpandingTextarea fontSize={20} lineHeight={25} minimumRows={5} {...props} {...focusHandlers} />
+			) : (
+				<input {...props} {...focusHandlers} />
+			)}
+		</div>
+	)
+}
+
+const debouncedSetItem = debounce((key, value) => localStorage.setItem(key, value), 100)
+export function createValueStorer(key, setter) {
+	return event => {
+		const {value} = event.target
+
+		setter(value)
+		debouncedSetItem(key, value)
+	}
+}
+
+export function CharacterNameInput({storageKey, setter, value}) {
+	const id = useId('name')
+	return (
+		<CharacterInput
+			id={id}
+			label="Name"
+			placeholder="Lumiére"
+			onChange={createValueStorer(storageKey, setter)}
+			value={value}
+			required
+		/>
+	)
+}
+export function CharacterStoryInput({storageKey, setter, value}) {
+	const id = useId('story')
+	return (
+		<CharacterInput
+			id={id}
+			label="Character Story"
+			placeholder="Tell your characters story and explain their background…"
+			className="CharacterStoryInput"
+			onChange={createValueStorer(storageKey, setter)}
+			value={value}
+			multiline
+			required
+		/>
+	)
+}
+
+export function clearStorageKeys(...keys) {
+	for (const key of keys) {
+		localStorage.setItem(key, '')
+	}
 }

@@ -8,6 +8,7 @@ import {Center} from '../components/center.js'
 import {transitions} from '../shared/theme.js'
 import {Notifications} from '../components/notifications.js'
 import {firestore, auth, provider as googleProvider} from '../shared/firebase.js'
+import {FadeLayout} from '../components/page-transitions'
 
 const initialStatus = {type: 'idle', data: null}
 
@@ -112,70 +113,80 @@ function AuthenticationPage({type}) {
 	}
 
 	return (
-		<Center className="auth-page">
-			<motion.div initial="hidden" animate="shown" exit="hidden" variants={pageVariants}>
-				<Stack as="main" horizontalAlign="center">
-					<motion.span
-						initial="enter"
-						animate="idle"
-						exit="exit"
-						variants={titleVariants}
-						transition={transitions.smooth}
-					>
-						<Text variant="superLarge" as="h1">
-							{pageData.title[type]}
-						</Text>
-					</motion.span>
-
-					<Stack as="form" style={{width: '20rem', maxWidth: 'calc(100vw - 4rem)'}} onSubmit={handleEmailSignIn}>
-						{type === 'register' && <TextField label="Name" placeholder="Andria" type="name" name="name" required />}
-						<TextField label="Email" placeholder="name@hey.com" type="email" name="email" required />
-						<TextField
-							label="Password"
-							placeholder="•••••••••••••••"
-							type="password"
-							name={pageData.passwordName[type]}
-							required
-						/>
-
-						<motion.div
-							style={{marginTop: '1rem'}}
+		<FadeLayout style={{height: '100vh'}}>
+			<Center className="auth-page">
+				<motion.div initial="hidden" animate="shown" exit="hidden" variants={pageVariants}>
+					<Stack as="main" horizontalAlign="center">
+						<motion.span
 							initial="enter"
 							animate="idle"
 							exit="exit"
-							variants={buttonVariants}
+							variants={titleVariants}
 							transition={transitions.smooth}
 						>
-							<Stack horizontal horizontalAlign="center">
-								<PrimaryButton style={{marginRight: '0.5rem'}} type="submit">
-									{pageData.mainButton[type]}
-								</PrimaryButton>
-								<DefaultButton onClick={handleGoogleSignIn}>{pageData.googleButton[type]}</DefaultButton>
-							</Stack>
-						</motion.div>
+							<Text variant="superLarge" as="h1">
+								{pageData.title[type]}
+							</Text>
+						</motion.span>
+
+						<Stack as="form" style={{width: '20rem', maxWidth: 'calc(100vw - 4rem)'}} onSubmit={handleEmailSignIn}>
+							{type === 'register' && <TextField label="Name" placeholder="Andria" type="name" name="name" required />}
+							<TextField
+								label="Email"
+								placeholder="name@hey.com"
+								autoComplete="email"
+								type="email"
+								name="email"
+								required
+							/>
+							<TextField
+								label="Password"
+								placeholder="•••••••••••••••"
+								autoComplete="new-password"
+								type="password"
+								name={pageData.passwordName[type]}
+								required
+							/>
+
+							<motion.div
+								style={{marginTop: '1rem'}}
+								initial="enter"
+								animate="idle"
+								exit="exit"
+								variants={buttonVariants}
+								transition={transitions.smooth}
+							>
+								<Stack horizontal horizontalAlign="center">
+									<PrimaryButton style={{marginRight: '0.5rem'}} type="submit">
+										{pageData.mainButton[type]}
+									</PrimaryButton>
+									<DefaultButton onClick={handleGoogleSignIn}>{pageData.googleButton[type]}</DefaultButton>
+								</Stack>
+							</motion.div>
+						</Stack>
+
+						<Text as="p" style={{marginTop: '1rem'}}>
+							{pageData.switchMessage[type]}
+						</Text>
 					</Stack>
 
-					<Text as="p" style={{marginTop: '1rem'}}>
-						{pageData.switchMessage[type]}
-					</Text>
-				</Stack>
-
-				<Notifications>
-					{status.type === 'auth-error' && (
-						<MessageBar
-							messageBarType={MessageBarType.error}
-							onDismiss={resetStatus}
-							dismissButtonAriaLabel="Close"
-							truncated
-						>
-							{pageData.errorMessage[type]}:
-							<br />
-							{status.data}
-						</MessageBar>
-					)}
-				</Notifications>
-			</motion.div>
-		</Center>
+					<Notifications>
+						{status.type === 'auth-error' && (
+							<MessageBar
+								messageBarType={MessageBarType.error}
+								onDismiss={resetStatus}
+								dismissButtonAriaLabel="Close"
+								truncated
+							>
+								{pageData.errorMessage[type]}:
+								<br />
+								{status.data}
+							</MessageBar>
+						)}
+					</Notifications>
+				</motion.div>
+			</Center>
+		</FadeLayout>
 	)
 }
 

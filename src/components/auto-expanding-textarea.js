@@ -1,4 +1,5 @@
 import {useEffect, useRef} from 'react'
+import {emptyObject} from '../shared/empty'
 
 function autoExpand(element, lineHeight) {
 	element.style.overflow = 'unset'
@@ -17,7 +18,7 @@ function autoExpand(element, lineHeight) {
 	element.style.overflow = 'hidden'
 }
 
-function configureAutoExpantion(element, lineHeight) {
+function configureAutoExpansion(element, lineHeight) {
 	// save textarea value for later
 	const savedValue = element.value
 
@@ -29,18 +30,17 @@ function configureAutoExpantion(element, lineHeight) {
 	element.value = savedValue
 	autoExpand(element, lineHeight)
 }
-
 export function AutoExpandingTextarea({
 	fontSize = 16,
 	lineHeight = fontSize,
 	minimumRows,
-	style = {},
+	style = emptyObject,
 	onChange,
 	...props
 }) {
 	const ref = useRef(null)
 	useEffect(() => {
-		configureAutoExpantion(ref.current, lineHeight)
+		configureAutoExpansion(ref.current, lineHeight)
 	}, [ref, lineHeight])
 
 	function handleChange(event) {

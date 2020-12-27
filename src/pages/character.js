@@ -77,7 +77,7 @@ export function CharacterPage() {
 					.ref()
 					.child(`${uid}/${fileID}`)
 					.delete()
-					.catch(error => console.warn(`Failed to delete art ${uid}/${fileID}:`, error))
+					.catch(error => console.warn(`Failed to delete art ${uid}/${fileID}:`, error)),
 			)
 		}
 
@@ -86,7 +86,7 @@ export function CharacterPage() {
 		promises.push(
 			ref
 				.update({characters: firebase.firestore.FieldValue.arrayRemove(character)})
-				.catch(error => console.warn(`Failed to delete character ${id}:`, error))
+				.catch(error => console.warn(`Failed to delete character ${id}:`, error)),
 		)
 
 		Promise.all(promises).finally(() => {
@@ -98,7 +98,7 @@ export function CharacterPage() {
 		return (
 			<FadeLayout style={{height: '100vh'}}>
 				<Center>
-					<Spinner label="Deleting your character for you..."/>
+					<Spinner label="Deleting your character for you..." />
 				</Center>
 			</FadeLayout>
 		)

@@ -50,3 +50,10 @@ export function forEachNonDescendantTree(element, callback) {
 		currentElement = currentElement.parentElement
 	}
 }
+
+export function removeFromArray(array, index) {
+	return array.slice(0, index).concat(array.slice(index + 1))
+}
+export function replaceInArray(array, index, callback) {
+	return array.slice(0, index).concat(callback(array[index]), array.slice(index + 1))
+}

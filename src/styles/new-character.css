@@ -1,7 +1,7 @@
-.NewCharacterInput input,
-.NewCharacterInput input::placeholder,
-.NewCharacterInput textarea,
-.NewCharacterInput textarea::placeholder {
+.CharacterInput input,
+.CharacterInput input::placeholder,
+.CharacterInput textarea,
+.CharacterInput textarea::placeholder {
 	width: 100%;
 	padding: 0;
 	color: var(--dark);
@@ -14,27 +14,27 @@
 	box-shadow: none;
 }
 
-.NewCharacterInput input:focus,
-.NewCharacterInput textarea:focus {
+.CharacterInput input:focus,
+.CharacterInput textarea:focus {
 	outline: none;
 }
 
-.NewCharacterInput textarea {
+.CharacterInput textarea {
 	margin-top: 10px;
 }
 
-.NewCharacterInput input::placeholder,
-.NewCharacterInput textarea::placeholder {
+.CharacterInput input::placeholder,
+.CharacterInput textarea::placeholder {
 	color: var(--not-as-dark);
 }
 
-.NewCharacterInput label {
+.CharacterInput label {
 	font-family: Inter, sans-serif;
 	font-weight: 600;
 	font-size: 20px;
 }
 
-.NewCharacterInput:not(:last-of-type) {
+.CharacterInput:not(:last-of-type) {
 	margin-bottom: 20px;
 }
 

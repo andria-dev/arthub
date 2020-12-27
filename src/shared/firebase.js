@@ -44,7 +44,7 @@ export const provider = new firebase.auth.GoogleAuthProvider()
 const FirebaseContext = createContext({user: null, characters: []})
 
 function FirebaseCharactersResource({user, resource, children}) {
-	const {characters} = useDocumentResource(firestore.collection('users').doc(user.uid), resource)
+	const {characters} = useDocumentResource(firestore.collection('users').doc(user?.uid), resource)
 	const value = useMemo(() => ({user, characters}), [user, characters])
 	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
 }
@@ -65,8 +65,12 @@ function FirebaseUserResource({resource, children}) {
 	}, [])
 
 	const userDocumentResource = useMemo(() => {
-		return createDocumentResource(firestore.collection('users').doc(user.uid))
-	}, [user.uid])
+		if (user?.uid) return createDocumentResource(firestore.collection('users').doc(user.uid))
+	}, [user?.uid])
+
+	if (!user) {
+		return <FirebaseContext.Provider value={{user, characters: []}}>{children}</FirebaseContext.Provider>
+	}
 
 	return (
 		<FirebaseCharactersResource user={user} resource={userDocumentResource}>
@@ -138,7 +142,7 @@ export function useCharacterWithImages(id) {
 		const character = characters.find(character => character.id === id)
 		const imageResources = character?.files?.map(id => createResource(fetchImageURL(user.uid, id))) ?? []
 		return {character, imageResources}
-	}, [characters, user.uid, id])
+	}, [characters, user?.uid, id])
 }
 
 export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'})

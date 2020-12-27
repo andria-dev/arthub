@@ -5,23 +5,75 @@ import {v1 as uuidv1} from 'uuid'
 import * as firebase from 'firebase'
 import {firestore, storage, corsAnywhere} from './firebase.js'
 import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
+import {removeFromArray, replaceInArray} from './helpers'
 
 export const uploadSlideshowMachine = createMachine(
 	{
 		id: 'upload-slideshow',
-		initial: 'noPhotos',
-		context: {currentPage: 0, files: []},
+		initial: 'idle',
+		context: {currentPage: 0, files: [], preExistingPhotos: []},
 		states: {
-			photos: {
+			idle: {
+				always: [
+					{
+						cond: 'atLeastOnePreExistingPhotoLeft',
+						target: 'preExistingPhotos',
+					},
+					{
+						// shouldn't happen but makes it future-proof
+						cond: 'atLeastOneNewPhotoLeft',
+						target: 'newPhotos',
+					},
+					{
+						target: 'noPhotos',
+					},
+				],
+			},
+			preExistingPhotos: {
 				on: {
 					PREVIOUS: {
-						cond: 'notAtBeginningOfPhotos',
+						cond: 'notAtBeginning',
 						actions: ['decrementPage'],
 					},
 					NEXT: [
 						{
-							cond: 'atEndOfPhotos',
-							target: 'newPhoto',
+							cond: 'atEndOfPreExistingPhotosButNewPhotosRemain',
+							target: 'newPhotos',
+							actions: ['goToFirstPage'],
+						},
+						{
+							cond: 'atEndOfPreExistingPhotos',
+							target: 'newPhotosPage',
+						},
+						{
+							actions: ['incrementPage'],
+						},
+					],
+					SCHEDULE_FOR_REMOVAL: {
+						actions: ['scheduleForRemoval'],
+					},
+					CANCEL_REMOVAL: {
+						actions: ['cancelRemoval'],
+					},
+				},
+			},
+			newPhotos: {
+				on: {
+					PREVIOUS: [
+						{
+							cond: 'notAtBeginning',
+							actions: ['decrementPage'],
+						},
+						{
+							cond: 'atLeastOnePreExistingPhotoLeft',
+							target: 'preExistingPhotos',
+							actions: ['goToLastPageOfPreExistingPhotos'],
+						},
+					],
+					NEXT: [
+						{
+							cond: 'atEndOfNewPhotos',
+							target: 'newPhotosPage',
 						},
 						{
 							actions: ['incrementPage'],
@@ -29,30 +81,47 @@ export const uploadSlideshowMachine = createMachine(
 					],
 					REMOVED_PHOTO: [
 						{
-							cond: 'atLeastOnePhotoLeft',
-							actions: ['removePhoto', 'decrementPageOrZero'],
+							cond: 'atLeastOneNewPhotoLeftAfterRemoval',
+							actions: ['removeNewPhoto', 'decrementPageOrZero'],
 						},
 						{
-							actions: ['removePhoto'],
+							cond: 'atLeastOnePreExistingPhotoLeft',
+							actions: ['removeNewPhoto', 'goToLastPageOfPreExistingPhotos'],
+						},
+						{
+							actions: ['removeNewPhoto'],
 							target: 'noPhotos',
 						},
 					],
 				},
 			},
-			newPhoto: {
+			newPhotosPage: {
 				on: {
-					PREVIOUS: 'photos',
+					PREVIOUS: [
+						{
+							cond: 'atLeastOneNewPhotoLeft',
+							target: 'newPhotos',
+						},
+						{
+							cond: 'atLeastOnePreExistingPhotoLeft',
+							target: 'preExistingPhotos',
+						},
+						{
+							// should be impossible to get here, this is just in case
+							target: 'noPhotos',
+						},
+					],
 					ADDED_PHOTOS: {
-						actions: ['incrementPage', 'addPhotos'],
-						target: 'photos',
+						actions: ['addNewPhotos', 'goToLastPageOfNewPhotos'],
+						target: 'newPhotos',
 					},
 				},
 			},
 			noPhotos: {
 				on: {
 					ADDED_PHOTOS: {
-						actions: ['addPhotos'],
-						target: 'photos',
+						actions: ['addNewPhotos'],
+						target: 'newPhotos',
 					},
 				},
 			},
@@ -63,21 +132,34 @@ export const uploadSlideshowMachine = createMachine(
 			decrementPage: assign({currentPage: ctx => ctx.currentPage - 1}),
 			decrementPageOrZero: assign({currentPage: ctx => Math.max(ctx.currentPage - 1, 0)}),
 			incrementPage: assign({currentPage: ctx => ctx.currentPage + 1}),
-			removePhoto: assign({
-				files(ctx) {
-					return [...ctx.files.slice(0, ctx.currentPage), ...ctx.files.slice(ctx.currentPage + 1)]
-				},
+			goToFirstPage: assign({currentPage: 0}),
+			goToLastPageOfPreExistingPhotos: assign({currentPage: ctx => ctx.preExistingPhotos.length - 1}),
+			goToLastPageOfNewPhotos: assign({currentPage: ctx => ctx.files.length - 1}),
+			removeNewPhoto: assign({
+				files: ({files, currentPage}) => removeFromArray(files, currentPage),
 			}),
-			addPhotos: assign({
-				files(ctx, event) {
-					return ctx.files.concat(event.data)
-				},
+			addNewPhotos: assign({
+				files: (ctx, event) => ctx.files.concat(event.data),
+			}),
+			scheduleForRemoval: assign({
+				preExistingPhotos: ({preExistingPhotos, currentPage}) =>
+					replaceInArray(preExistingPhotos, currentPage, photo => ({...photo, scheduledForRemoval: true})),
+			}),
+			cancelRemoval: assign({
+				preExistingPhotos: ({preExistingPhotos, currentPage}) =>
+					replaceInArray(preExistingPhotos, currentPage, photo => ({...photo, scheduledForRemoval: false})),
 			}),
 		},
 		guards: {
-			notAtBeginningOfPhotos: ctx => ctx.currentPage > 0,
-			atEndOfPhotos: ctx => ctx.currentPage >= ctx.files.length - 1,
-			atLeastOnePhotoLeft: ctx => ctx.files.length > 1,
+			atEndOfPreExistingPhotos: ctx => ctx.currentPage >= ctx.preExistingPhotos.length - 1,
+			atEndOfPreExistingPhotosButNewPhotosRemain: ctx =>
+				ctx.currentPage >= ctx.preExistingPhotos.length - 1 && ctx.files.length > 0,
+			noPreExistingPhotos: ctx => ctx.preExistingPhotos.length === 0,
+			notAtBeginning: ctx => ctx.currentPage > 0,
+			atEndOfNewPhotos: ctx => ctx.currentPage >= ctx.files.length - 1,
+			atLeastOneNewPhotoLeft: ctx => ctx.files.length > 0,
+			atLeastOneNewPhotoLeftAfterRemoval: ctx => ctx.files.length > 1,
+			atLeastOnePreExistingPhotoLeft: ctx => ctx.preExistingPhotos.length > 0,
 		},
 	},
 )

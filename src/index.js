@@ -19,6 +19,7 @@ import {CharacterPage} from './pages/character.js'
 import * as serviceWorker from './serviceWorker.js'
 import './styles/index.css'
 import {EditCharacterPage} from './pages/edit-character'
+import {FadeLayout} from './components/page-transitions'
 
 loadTheme(theme)
 initializeIcons()
@@ -32,7 +33,11 @@ function PrivateRoute({as, ...props}) {
 	const user = useUser()
 
 	if (user) return <Route component={as} {...props} />
-	return <Redirect to="/login" />
+	return (
+		<FadeLayout>
+			<Redirect to="/login" />
+		</FadeLayout>
+	)
 }
 
 /**
@@ -44,7 +49,11 @@ function UnauthenticatedRoute({as, ...props}) {
 	const user = useUser()
 
 	if (!user) return <Route component={as} {...props} />
-	return <Redirect to="/" />
+	return (
+		<FadeLayout>
+			<Redirect to="/" />
+		</FadeLayout>
+	)
 }
 
 ReactDOM.render(
