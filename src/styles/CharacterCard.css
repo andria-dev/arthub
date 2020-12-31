@@ -51,7 +51,7 @@
 	transform: translateY(20px);
 	transition: transform 0.2s ease;
 }
-.CharacterCard__view-button {
+.CharacterCard__action-button {
 	margin-bottom: 15px;
 	padding: 10px 15px;
 
@@ -62,30 +62,34 @@
 	font-weight: bold;
 	text-decoration: none;
 
+	border: none;
 	border-radius: 7px;
 	pointer-events: none;
 }
 
 .CharacterCard:hover .CharacterCard__cover,
-.CharacterCard:focus-within .CharacterCard__cover {
+.CharacterCard:focus-within .CharacterCard__cover,
+.CharacterCard--share-characters .CharacterCard__cover {
 	filter: blur(6px);
 }
 .CharacterCard:hover .CharacterCard__overlay,
-.CharacterCard:focus-within .CharacterCard__overlay {
+.CharacterCard:focus-within .CharacterCard__overlay,
+.CharacterCard--share-characters .CharacterCard__overlay {
 	opacity: 1;
 }
 .CharacterCard:hover .CharacterCard__name,
-.CharacterCard:focus-within .CharacterCard__name {
+.CharacterCard:focus-within .CharacterCard__name,
+.CharacterCard--share-characters .CharacterCard__name {
 	transform: translateY(0);
 }
-.CharacterCard:hover .CharacterCard__view-button,
-.CharacterCard:focus-within .CharacterCard__view-button {
+.CharacterCard:hover .CharacterCard__action-button,
+.CharacterCard:focus-within .CharacterCard__action-button {
 	pointer-events: auto;
 	transition-property: pointer-events;
 	transition-delay: 0.2s;
 }
 
-.CharacterCard__view-button:focus {
+.CharacterCard__action-button:focus {
 	outline-offset: -2px;
 }
 

@@ -1,27 +1,21 @@
-import {useMemo, useState} from 'react'
+import {memo, useState} from 'react'
 
 import {useMachine} from '@xstate/react'
-import {useParams, useHistory} from 'react-router-dom'
+import {useHistory, useParams} from 'react-router-dom'
 import * as firebase from 'firebase'
 
-import {
-	fetchImageURL,
-	firestore,
-	storage,
-	useCharacterWithImages,
-	useUser,
-	withUserResource,
-} from '../shared/firebase.js'
-import {ActionButton} from '../components/action-button.js'
-import {plainSlideshowMachine} from '../shared/machines.js'
-import {createDocumentResource, createResource, useDocumentResource} from '../shared/resources.js'
+import {firestore, storage, useCharacterWithImages, useUser} from '../shared/firebase.js'
+import {ActionButton} from '../components/ActionButton.js'
+import {slideshowMachine} from '../shared/machines.js'
 import {artworkStyles, artworkWrapperStyles, NextButton, PreviousButton} from '../components/slideshow-parts.js'
-import {CharacterStory, CharacterLayout} from '../components/character-parts.js'
+import {CharacterLayout, CharacterStory} from '../components/character-parts.js'
+
+import {FadeLayout} from '../components/FadeLayout'
+import {Center} from '../components/Center'
+import {Spinner} from '@fluentui/react'
 
 import '../styles/character.css'
-import {FadeLayout} from '../components/page-transitions'
-import {Center} from '../components/center'
-import {Spinner} from '@fluentui/react'
+import {Loading} from '../components/Loading'
 
 function CharacterSlideshow({context, send, resources}) {
 	if (resources.length === 0) return null
@@ -40,17 +34,13 @@ function CharacterSlideshow({context, send, resources}) {
 	)
 }
 
-/**
- * @param {{userRef: DocumentRef<UserData>, resource: ResourceReader<UserData>}} props
- * @constructor
- */
 export function CharacterPage() {
-	const {characterID: id} = useParams()
+	const {characterId: id} = useParams()
 	const {character, imageResources} = useCharacterWithImages(id)
 
 	const [slideshowState, send] = useMachine(
-		plainSlideshowMachine.withContext({
-			...plainSlideshowMachine.context,
+		slideshowMachine.withContext({
+			...slideshowMachine.context,
 			numberOfImages: imageResources.length,
 		}),
 	)
@@ -71,13 +61,13 @@ export function CharacterPage() {
 
 		// Delete artwork first
 		const promises = []
-		for (const fileID of character.files) {
+		for (const fileId of character.files) {
 			promises.push(
 				storage
 					.ref()
-					.child(`${uid}/${fileID}`)
+					.child(`${uid}/${fileId}`)
 					.delete()
-					.catch(error => console.warn(`Failed to delete art ${uid}/${fileID}:`, error)),
+					.catch(error => console.warn(`Failed to delete art ${uid}/${fileId}:`, error)),
 			)
 		}
 
@@ -97,9 +87,7 @@ export function CharacterPage() {
 	if (status === 'deleting') {
 		return (
 			<FadeLayout style={{height: '100vh'}}>
-				<Center>
-					<Spinner label="Deleting your character for you..." />
-				</Center>
+				<Loading label="Deleting your character for you..." />
 			</FadeLayout>
 		)
 	}
@@ -107,6 +95,7 @@ export function CharacterPage() {
 	return (
 		<CharacterLayout
 			mode="display"
+			className="Character"
 			slideshow={<CharacterSlideshow context={slideshowState.context} send={send} resources={imageResources} />}
 			name={<h1 className="Character__name">{character.name}</h1>}
 			story={<CharacterStory story={character.story} />}

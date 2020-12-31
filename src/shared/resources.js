@@ -96,7 +96,6 @@ export function createResourceFromSubscription(subscribe) {
  * @returns {ResourceReader<V>}
  */
 export function createDocumentResource(documentRef) {
-	console.log('Creating a new document resource')
 	return createResource(documentRef.get().then(doc => doc.data()))
 }
 

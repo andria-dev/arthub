@@ -1,12 +1,11 @@
 import {Suspense, useMemo} from 'react'
-import {Link as RouterLink} from 'react-router-dom'
 
-import {fetchImageURL, useUser} from '../shared/firebase.js'
+import {motion} from 'framer-motion'
 import {createResource} from '../shared/resources.js'
+import {fetchImageURL, useUser} from '../shared/firebase.js'
+import {Loading} from './Loading.js'
 
-import '../styles/character-card.css'
-import {Center} from './center'
-import {Spinner} from '@fluentui/react'
+import '../styles/CharacterCard.css'
 
 /**
  * @param {{resource: ResourceReader<string>, alt: string}} props
@@ -19,39 +18,44 @@ function CharacterCardArt({resource, alt}) {
 
 /**
  *
- * @param {{character: Character}} props
- * @returns {JSX.Element}
- * @constructor
+ * @param {Character} character
+ * @returns {ResourceReader<string>}
  */
-export function CharacterCard({character}) {
+function useFirstImageResourceCreator(character) {
 	const {uid} = useUser()
-	const imageResource = useMemo(() => {
+	return useMemo(() => {
 		if (character.files.length > 0) return createResource(fetchImageURL(uid, character.files[0]))
 		return null
 	}, [character.files, uid])
+}
+
+/**
+ *
+ * @param {{character: Character, children: any}} props
+ * @returns {JSX.Element}
+ * @constructor
+ */
+export function CharacterCard({mode, character, children}) {
+	const imageResource = useFirstImageResourceCreator(character)
 
 	return (
-		<figure className="CharacterCard">
+		<figure className={`CharacterCard CharacterCard--${mode}`}>
 			{/*TODO: replace alt with alt from data*/}
 			{imageResource ? (
-				<Suspense
-					fallback={
-						<Center>
-							<Spinner />
-						</Center>
-					}
-				>
-					<CharacterCardArt resource={imageResource} alt={`Art of "${character.name}"`} />
+				<Suspense fallback={<Loading />}>
+					<motion.div layoutId={`character-art-${character.id}`}>
+						<CharacterCardArt resource={imageResource} alt="" />
+					</motion.div>
 				</Suspense>
 			) : (
 				<span className="CharacterCard__letter">{character.name[0]}</span>
 			)}
 
 			<figcaption className="CharacterCard__overlay">
-				<p className="CharacterCard__name">{character.name}</p>
-				<RouterLink to={`/character/${character.id}`} className="CharacterCard__view-button">
-					View Character
-				</RouterLink>
+				<p className="CharacterCard__name" layoutId={`card-title-${character.id}`}>
+					{character.name}
+				</p>
+				{children}
 			</figcaption>
 		</figure>
 	)

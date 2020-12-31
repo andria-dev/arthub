@@ -4,11 +4,11 @@ import {motion} from 'framer-motion'
 import {Link as RouterLink} from 'react-router-dom'
 import {DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField} from '@fluentui/react'
 
-import {Center} from '../components/center.js'
+import {Center} from '../components/Center.js'
 import {transitions} from '../shared/theme.js'
-import {Notifications} from '../components/notifications.js'
+import {Notifications} from '../components/Notifications.js'
 import {firestore, auth, provider as googleProvider} from '../shared/firebase.js'
-import {FadeLayout} from '../components/page-transitions'
+import {FadeLayout} from '../components/FadeLayout'
 
 const initialStatus = {type: 'idle', data: null}
 

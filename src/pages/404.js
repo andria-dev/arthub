@@ -2,8 +2,8 @@ import {motion} from 'framer-motion'
 import {Text, Link, DefaultButton} from '@fluentui/react'
 import {useHistory, Link as RouterLink} from 'react-router-dom'
 
-import {Center} from '../components/center.js'
-import {FadeLayout} from '../components/page-transitions.js'
+import {Center} from '../components/Center.js'
+import {FadeLayout} from '../components/FadeLayout.js'
 
 export function NoRoute() {
 	const history = useHistory()

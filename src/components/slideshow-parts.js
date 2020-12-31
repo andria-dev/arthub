@@ -1,12 +1,12 @@
-import {ActionButton} from './action-button'
+import {ActionButton} from './ActionButton'
 import {colors} from '../shared/theme'
 import {useMachine} from '@xstate/react'
 import {uploadSlideshowMachine} from '../shared/machines'
 import {useDropzone} from 'react-dropzone'
 import {FontIcon, Text} from '@fluentui/react'
-import {useId} from '@uifabric/react-hooks'
+import {useId} from '@reach/auto-id'
 import {emptyArray} from '../shared/empty'
-import {Center} from './center'
+import {Center} from './Center'
 
 export const artworkWrapperStyles = {
 	position: 'relative',
@@ -102,7 +102,7 @@ function PreExistingPhoto({resource}) {
 /**
  *
  * @param {[{id: string, resource: ResourceReader<string>, scheduledForRemoval: boolean}]} preExistingPhotos
- * @returns {{preExistingPhotos: ([]|*), fileRejections: FileRejection[], isFileDialogActive: boolean, dropMessage: JSX.Element, inputRef: React.RefObject<HTMLInputElement>, isDragReject: boolean, isFocused: boolean, getInputProps(props?: DropzoneInputProps): DropzoneInputProps, acceptedFiles: File[], slideshowSection: JSX.Element, draggedFiles: File[], isDragAccept: boolean, rootRef: React.RefObject<HTMLElement>, getRootProps(props?: DropzoneRootProps): DropzoneRootProps, dropID: string, isDragActive: boolean, files, open(): void}}
+ * @returns {{preExistingPhotos: ([]|*), fileRejections: FileRejection[], isFileDialogActive: boolean, dropMessage: JSX.Element, inputRef: React.RefObject<HTMLInputElement>, isDragReject: boolean, isFocused: boolean, getInputProps(props?: DropzoneInputProps): DropzoneInputProps, acceptedFiles: File[], slideshowSection: JSX.Element, draggedFiles: File[], isDragAccept: boolean, rootRef: React.RefObject<HTMLElement>, getRootProps(props?: DropzoneRootProps): DropzoneRootProps, dropId: string, isDragActive: boolean, files, open(): void}}
  */
 export function useSlideshow(preExistingPhotos = emptyArray) {
 	const [state, send] = useMachine(
@@ -219,7 +219,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 	else if (dropzone.isDragAccept) dropMessageContent = dropZoneMessages.accepted
 	else dropMessageContent = dropZoneMessages.idle
 
-	const dropID = useId('drop')
+	const dropId = useId('drop')
 	let dropMessage
 	/* TODO: align center on Desktop sizes */
 	if (state.matches('photos'))
@@ -232,7 +232,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 		dropMessage = (
 			<Text
 				as="label"
-				htmlFor={dropID}
+				htmlFor={dropId}
 				variant="higherTitle"
 				style={{textAlign: 'right', padding: '0 31px', marginTop: 10}}
 			>
@@ -242,7 +242,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 
 	return {
 		...dropzone,
-		dropID,
+		dropId,
 		dropMessage,
 		slideshowSection,
 		files: state.context.files,

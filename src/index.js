@@ -1,25 +1,29 @@
 import {StrictMode, Suspense} from 'react'
 import ReactDOM from 'react-dom'
+
 import {loadTheme, Spinner} from '@fluentui/react'
 import {Route, Redirect} from 'react-router-dom'
 import {initializeIcons} from 'office-ui-fabric-react/lib/Icons'
 
-import {Login, Register} from './pages/authentication.js'
-import {TransitionRouter} from './components/transition-router.js'
-import {Home} from './pages/home.js'
 import {Landing} from './pages/landing.js'
-import {Center} from './components/center.js'
-import {FirebaseProvider, useUser} from './shared/firebase.js'
-import {theme} from './shared/theme.js'
-import {BasicBoundary} from './components/error-boundary.js'
-import {NoRoute} from './pages/404.js'
+import {Login, Register} from './pages/login.js'
+import {Home} from './pages/home.js'
 import {NewCharacter} from './pages/new-character.js'
 import {CharacterPage} from './pages/character.js'
+import {EditCharacterPage} from './pages/edit-character.js'
+import {NoRoute} from './pages/404.js'
 
+import {Center} from './components/Center.js'
+import {Loading} from './components/Loading.js'
+import {FadeLayout} from './components/FadeLayout.js'
+import {BasicBoundary} from './components/BasicBoundary.js'
+import {TransitionRouter} from './components/TransitionRouter.js'
+
+import {theme} from './shared/theme.js'
+import {FirebaseProvider, useUser} from './shared/firebase.js'
 import * as serviceWorker from './serviceWorker.js'
+
 import './styles/index.css'
-import {EditCharacterPage} from './pages/edit-character'
-import {FadeLayout} from './components/page-transitions'
 
 loadTheme(theme)
 initializeIcons()
@@ -59,19 +63,13 @@ function UnauthenticatedRoute({as, ...props}) {
 ReactDOM.render(
 	<StrictMode>
 		<BasicBoundary>
-			<Suspense
-				fallback={
-					<Center>
-						<Spinner label="Preparing everything as fast as we can..." />
-					</Center>
-				}
-			>
+			<Suspense fallback={<Loading label="Preparing everything as fast as we can..." />}>
 				<FirebaseProvider>
 					<TransitionRouter>
 						<PrivateRoute exact as={Home} path="/" />
 						<PrivateRoute exact as={NewCharacter} path="/new-character" />
-						<PrivateRoute exact as={CharacterPage} path="/character/:characterID" />
-						<PrivateRoute exact as={EditCharacterPage} path="/edit-character/:characterID" />
+						<PrivateRoute exact as={CharacterPage} path="/character/:characterId" />
+						<PrivateRoute exact as={EditCharacterPage} path="/edit-character/:characterId" />
 						<Landing exact path="/landing" />
 						<UnauthenticatedRoute exact as={Login} path="/login" />
 						<UnauthenticatedRoute exact as={Register} path="/register" />

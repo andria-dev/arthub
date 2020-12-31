@@ -51,26 +51,63 @@ I am using the `framer-motion` package from npm for animation, transitions, and 
 
 ## User Stories
 
-- [ ] Create characters with:
+- [x] Create characters with:
   - [x] A name
-  - [x] A rich-text story (switching to https://github.com/basecamp/trix)
+  - [x] A rich-text story — uses trix-editor
   - [x] Can upload artwork
-  - [ ] Each work of art can have an `alt`
-- [ ] Edit characters:
-  - [ ] Name
-  - [ ] Rich-text story
-  - [ ] Remove old artwork
-  - [ ] Add new artwork
-  - [ ] Edit alts
+  - [ ] Each work of art can have an `alt` — Non-MVP
+- [x] Edit characters:
+  - [x] Name
+  - [x] Rich-text story — trix-editor
+  - [x] Remove old artwork
+  - [x] Add new artwork
+  - [ ] Edit alts — Non-MVP
 - [x] View character
   - [x] Name
-  - [x] Rich-text story — not raw markdown or anything else
+  - [x] Rich-text story — trix-editor in readonly mode
   - [x] Artwork
 - [x] Delete character and all related artwork
 - [ ] Sharing
-  - [ ] Share character via unique link
-  - [ ] Share character with time-sensitive link
-  - [ ] Un-share character link
+  - [ ] Share character via unique link <br>
+    `[{characterId: string, alias: string, shareId: string}]`
+  - [ ] Un-share character links
+  - [ ] View shared links
+- [ ] Responsive UI
+ - [x] Mobile
+ - [ ] Tablet
+ - [ ] Desktop
+  
+## Firebase
+
+My structure right now is:
+
+- collection: users
+  - document: \<user-id\>
+    - array field: characters
+      - string: id
+      - Array\<string\>: files
+      - String: name
+      - String: story
+
+I would like to convert over to sub-collections for more concise saving of an individual character in the `saveCharacterMachine` and, if I'm correct, larger storage size. This would potentially look like the following:
+
+- collection: users
+  - document: \<user-id\>
+    - sub-collection: characters
+      - document: \<id\>
+        - Array\<string\>: files
+        - String: name
+        - String: story
+  
+However, this could potentially make obtaining a list of all the characters a bit more difficult.
+
+Another option could be not creating a `users` collection but rather creating a collection for each user — not a document. It would still be a bit more difficult to obtain a list of all characters but this could potentially improve the DX even more.
+
+- collection: \<user-id\>
+  - document: \<character-id\>
+    - Array\<string\>: files
+    - String: name
+    - String: story
 
 ## Testing
 
@@ -78,7 +115,7 @@ I am using the `framer-motion` package from npm for animation, transitions, and 
 yarn test
 ```
 
-This application currently has no tests as it is a gift, and I'm on a time crunch.
+This application currently has no tests as it is a gift, and I'm on a time crunch. Alongside this, I have no knowledge of testing with Firebase's Firestore and Storage APIs.
 
 ## Formatting
 

@@ -1,13 +1,13 @@
-import {useEffect, useRef} from 'react'
+import {useContext, useEffect, useRef} from 'react'
 
 import {Text} from '@fluentui/react'
 import {useMachine} from '@xstate/react'
 import {AnimatePresence, motion} from 'framer-motion'
 
 import {colors, transitions} from '../shared/theme.js'
-import {PROFILE_SIZE, ProfilePhoto} from './profile-photo.js'
+import {PROFILE_SIZE, ProfilePhoto} from './ProfilePhoto.js'
 import {forEachNonDescendantTree} from '../shared/helpers.js'
-import {profileMenuMachine} from '../shared/machines.js'
+import {ProfileMenuContext, profileMenuMachine} from '../shared/machines.js'
 
 const profileMenuStyles = {
 	position: 'absolute',
@@ -57,6 +57,7 @@ const nameStyles = {
 	letterSpacing: 1,
 	lineHeight: 1.2,
 	textAlign: 'center',
+	textTransform: 'capitalize',
 }
 
 const listVariants = {
@@ -112,8 +113,8 @@ export function ProfileMenuItem(props) {
 	)
 }
 
-export function ProfileMenu({email, name, children}) {
-	const [state, send, service] = useMachine(profileMenuMachine)
+export function ProfileMenu({email, name, menuName, children}) {
+	const [state, send, service] = useContext(ProfileMenuContext)
 	const backdropRef = useRef(null)
 
 	// handle TAP_AWAY, ESC, and inert
@@ -186,13 +187,13 @@ export function ProfileMenu({email, name, children}) {
 						transition={{type: 'spring', mass: 0.2}}
 					>
 						<Text variant="mediumTitle" style={nameStyles}>
-							{state.matches('open') ? 'Profile Menu' : name}
+							{state.matches('open') ? `${menuName} Menu` : name}
 						</Text>
 					</motion.span>
 					<ProfilePhoto email={email} />
 				</motion.button>
 
-				{/* Menu buttons */}
+				{/* Render menu buttons passed as children */}
 				<AnimatePresence>
 					{state.matches('open') && (
 						<motion.div initial="hidden" animate="visible" exit="hidden" variants={listVariants} style={listStyles}>
@@ -201,6 +202,8 @@ export function ProfileMenu({email, name, children}) {
 					)}
 				</AnimatePresence>
 			</motion.div>
+
+			{/* Fade in backdrop */}
 			<AnimatePresence>
 				{(state.matches('open') || state.matches('partiallyOpen')) && (
 					<motion.div

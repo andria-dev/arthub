@@ -3,9 +3,10 @@ import gravatar from 'gravatar'
 import {v1 as uuidv1} from 'uuid'
 
 import * as firebase from 'firebase'
-import {firestore, storage, corsAnywhere} from './firebase.js'
+import {corsAnywhere, firestore, storage} from './firebase.js'
 import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
 import {removeFromArray, replaceInArray} from './helpers'
+import {createContext} from 'react'
 
 export const uploadSlideshowMachine = createMachine(
 	{
@@ -86,6 +87,7 @@ export const uploadSlideshowMachine = createMachine(
 						},
 						{
 							cond: 'atLeastOnePreExistingPhotoLeft',
+							target: 'preExistingPhotos',
 							actions: ['removeNewPhoto', 'goToLastPageOfPreExistingPhotos'],
 						},
 						{
@@ -164,7 +166,7 @@ export const uploadSlideshowMachine = createMachine(
 	},
 )
 
-export const plainSlideshowMachine = createMachine(
+export const slideshowMachine = createMachine(
 	{
 		id: 'slideshow',
 		initial: 'idle',
@@ -216,6 +218,7 @@ export const plainSlideshowMachine = createMachine(
 	},
 )
 
+export const ProfileMenuContext = createContext([{}, {}, {}])
 export const profileMenuMachine = createMachine({
 	id: 'profile-menu',
 	initial: 'closed',
@@ -236,10 +239,24 @@ export const profileMenuMachine = createMachine({
 			on: {TAP_TOGGLE: 'open'},
 		},
 		open: {
+			initial: 'profile',
 			on: {
 				TAP_AWAY: 'closed',
 				TAP_TOGGLE: 'partiallyOpen',
 				ESC: 'partiallyOpen',
+			},
+			states: {
+				profile: {
+					on: {
+						OPEN_SHARE_MENU: 'share',
+					},
+				},
+				share: {
+					on: {
+						MENU_BACK: 'profile',
+						SHARE_CHARACTER: '#profile-menu.closed',
+					},
+				},
 			},
 		},
 	},
@@ -326,73 +343,152 @@ export const gravatarMachine = createMachine({
 	},
 })
 
-export const newCharacterMachine = createMachine(
+export const saveCharacterMachine = createMachine(
 	{
-		id: 'new-character',
+		id: 'save-character',
 		initial: 'idle',
 		context: {
-			characterID: '',
-			fileIDs: [],
+			mode: '',
+			characterId: '',
+			fileIds: [],
 			error: null,
 			name: '',
 			story: '',
 			files: [],
+			preExistingPhotos: [],
 			uid: '',
+			characters: [],
 		},
 		states: {
 			idle: {
 				entry: assign({
-					characterID: () => uuidv1(),
+					characterId: ctx => ctx.characterId || uuidv1(),
 				}),
 				on: {
-					SAVE: {
-						actions: ['getUploadInformation'],
+					SAVE_NEW_CHARACTER: {
 						target: 'uploadingFiles',
+						actions: [assign({mode: 'new'})],
+					},
+					SAVE_CHARACTER_EDITS: {
+						target: 'uploadingFiles',
+						actions: [assign({mode: 'edit'})],
 					},
 				},
 			},
 			uploadingFiles: {
-				entry: ['createIDs'],
+				entry: ['getUploadInformation', 'createIdsForNewPhotos'],
 				invoke: {
-					src: ({files, fileIDs, uid}, event) => {
+					src: ({files, fileIds, uid}, event) => {
 						return Promise.all(
 							files.map((file, index) => {
-								const ref = storage.ref().child(`${uid}/${fileIDs[index]}`)
+								const ref = storage.ref().child(`${uid}/${fileIds[index]}`)
 								return ref.put(file)
 							}),
 						)
 					},
-					onDone: 'updatingCharacterInfo',
+					onDone: [
+						{
+							cond: 'isNewCharacter',
+							target: 'saving.new',
+						},
+						{
+							target: 'saving.edits',
+						},
+					],
 					onError: {
 						action: ['cleanUpFileTransfers', 'setError'],
 						target: 'finished.error',
 					},
 				},
 			},
-			updatingCharacterInfo: {
-				invoke: {
-					src: ({characterID, fileIDs, name, story, uid}) => {
-						return firestore
-							.collection('users')
-							.doc(uid)
-							.update({
-								characters: firebase.firestore.FieldValue.arrayUnion({
-									id: characterID,
-									files: fileIDs,
+			saving: {
+				states: {
+					new: {
+						invoke: {
+							src: ({characterId, fileIds, name, story, uid}) => {
+								return firestore
+									.collection('users')
+									.doc(uid)
+									.update({
+										characters: firebase.firestore.FieldValue.arrayUnion({
+											id: characterId,
+											files: fileIds,
+											name,
+											story,
+										}),
+									})
+							},
+							onDone: '#save-character.finished.success',
+							onError: {
+								target: '#save-character.finished.error',
+								actions: ['setError', 'cleanUpFileTransfers'],
+							},
+						},
+					},
+					edits: {
+						invoke: {
+							src: ({characters, characterId, preExistingPhotos, fileIds, name, story, uid}) => {
+								const newFiles = preExistingPhotos
+									.filter(photo => !photo.scheduledForRemoval)
+									.map(photo => photo.id)
+									.concat(fileIds)
+								const characterIndex = characters.findIndex(character => character.id === characterId)
+
+								// No character was found
+								if (characterIndex === -1) {
+									const error = new Error(`Unable to find a character with the id: ${characterId}`)
+									return new Promise((resolve, reject) => reject(error))
+								}
+
+								const oldCharacter = characters[characterIndex]
+								// If nothing has changed don't attempt to make changes.
+								if (
+									preExistingPhotos.filter(photo => photo.scheduledForRemoval).length === 0 &&
+									fileIds.length === 0 &&
+									oldCharacter.name === name &&
+									oldCharacter.story === story
+								)
+									return
+
+								const updatedCharacters = replaceInArray(characters, characterIndex, () => ({
+									id: characterId,
+									files: newFiles,
 									name,
 									story,
-								}),
-							})
+								}))
+								return firestore.collection('users').doc(uid).update({characters: updatedCharacters})
+							},
+							onDone: 'scheduledRemoval',
+							onError: {
+								target: '#save-character.finished.error',
+								actions: ['setError', 'cleanUpFileTransfers'],
+							},
+						},
 					},
-					onDone: 'finished.success',
-					onError: {
-						target: 'finished.error',
-						actions: ['setError', 'cleanUpFileTransfers'],
+					scheduledRemoval: {
+						invoke: {
+							src: ({uid, preExistingPhotos}) => {
+								return Promise.all(
+									preExistingPhotos
+										.filter(photo => photo.scheduledForRemoval)
+										.map(photo => {
+											return storage
+												.ref()
+												.child(`${uid}/${photo.id}`)
+												.delete()
+												.catch(error => {
+													console.warn(`Failed to delete pre-existing art ${uid}/${photo.id}:`, error)
+												})
+										}),
+								)
+							},
+							onDone: '#save-character.finished.success',
+							onError: '#save-character.finished.error',
+						},
 					},
 				},
 			},
 			finished: {
-				initial: 'error',
 				states: {
 					success: {type: 'final'},
 					error: {type: 'final'},
@@ -402,22 +498,31 @@ export const newCharacterMachine = createMachine(
 	},
 	{
 		actions: {
-			getUploadInformation: assign((ctx, {name, story, files, uid}) => {
-				return {name, story, files, uid}
+			getUploadInformation: assign(({mode}, {name, story, files, uid, preExistingPhotos, characters}) => {
+				if (mode === 'new') return {name, story, files, uid}
+				else if (mode === 'edit') return {name, story, preExistingPhotos, files, uid, characters}
 			}),
-			createIDs: assign({
-				fileIDs: ({files}) => files.map(() => uuidv1()),
+			createIdsForNewPhotos: assign({
+				fileIds: ({files}) => files.map(() => uuidv1()),
 			}),
-			setError: assign({error: (ctx, event) => event.data}),
-			cleanUpFileTransfers({fileIDs, uid}) {
-				for (const fileID of fileIDs) {
+			setError: assign({
+				error: (ctx, {data: error}) => {
+					console.warn(`An error occurred while saving your character:`, error)
+					return error
+				},
+			}),
+			cleanUpFileTransfers({fileIds, uid}) {
+				for (const fileId of fileIds) {
 					storage
 						.ref()
-						.child(`${uid}/${fileID}`)
+						.child(`${uid}/${fileId}`)
 						.delete()
-						.catch(error => console.warn(`Failed to delete art ${uid}/${fileID}:`, error))
+						.catch(error => console.warn(`Failed to delete new art ${uid}/${fileId}:`, error))
 				}
 			},
+		},
+		guards: {
+			isNewCharacter: ctx => ctx.mode === 'new',
 		},
 	},
 )

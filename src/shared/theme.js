@@ -71,11 +71,13 @@ export const colors = {
 	orange: 'hsl(19, 72%, 75%)',
 	realOrange: 'hsl(19, 72%, 50%)',
 	orangeShadow: 'hsla(19, 72%, 75%, 0.25)',
+	strongOrangeShadow: 'hsla(19, 72%, 75%, 0.4)',
 	dark: 'hsl(0, 0%, 10%)',
 	notAsDark: 'hsl(0, 0%, 35%)',
 	light: 'hsl(0, 0%, 99%)',
 	lightShadow: 'hsla(0, 0%, 0%, 0.1)',
 	danger: 'hsl(0, 87%, 41%)',
+	dialogOverlay: 'rgba(88, 38, 14, 0.81)',
 }
 
 for (const colorName in colors) {

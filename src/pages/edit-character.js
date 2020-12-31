@@ -1,6 +1,4 @@
 import {useEffect, useMemo, useState} from 'react'
-
-import {useId} from '@uifabric/react-hooks'
 import {useHistory, useParams} from 'react-router-dom'
 
 import {
@@ -9,12 +7,16 @@ import {
 	CharacterStoryInput,
 	clearStorageKeys,
 } from '../components/character-parts.js'
-import {useCharacterWithImages, useUser} from '../shared/firebase.js'
-import {ActionButton} from '../components/action-button.js'
+import {useCharacters, useCharacterWithImages, useUser} from '../shared/firebase.js'
+import {ActionButton} from '../components/ActionButton.js'
 import {useSlideshow} from '../components/slideshow-parts'
+import {saveCharacterMachine} from '../shared/machines'
+import {useMachine} from '@xstate/react'
+import {SaveDialog} from '../components/SaveDialog'
 
 export function EditCharacterPage() {
-	const {characterID: id} = useParams()
+	const {characterId: id} = useParams()
+	const characters = useCharacters()
 	const {character, imageResources} = useCharacterWithImages(id)
 	const initialPreExistingPhotoData = useMemo(
 		() =>
@@ -25,12 +27,12 @@ export function EditCharacterPage() {
 			})),
 		[character?.files, imageResources],
 	)
-	const {getInputProps, slideshowSection, dropMessage, dropID, files, preExistingPhotos} = useSlideshow(
+	const {getInputProps, slideshowSection, dropMessage, dropId, files, preExistingPhotos} = useSlideshow(
 		initialPreExistingPhotoData,
 	)
 
-	const [name, setName] = useState(localStorage.getItem('edit-character-name') || character.name)
-	const [story, setStory] = useState(localStorage.getItem('edit-character-story') || character.story)
+	const defaultName = localStorage.getItem('edit-character-name') || character.name
+	const defaultStory = localStorage.getItem('edit-character-story') || character.story
 
 	const history = useHistory()
 	function cancel() {
@@ -39,10 +41,25 @@ export function EditCharacterPage() {
 	}
 
 	const {uid} = useUser()
+	const [saveState, send] = useMachine(
+		saveCharacterMachine.withContext({
+			...saveCharacterMachine.context,
+			characterId: id,
+		}),
+	)
 	function saveChanges(event) {
 		event.preventDefault()
-		// send('SAVE', {name, story, files, uid, preExistingPhotos})
+		const name = event.target.name.value
+		const story = JSON.stringify(event.target.querySelector('trix-editor').editor.toJSON())
+		send('SAVE_CHARACTER_EDITS', {name, story, preExistingPhotos, files, uid, characters})
 	}
+
+	useEffect(() => {
+		if (saveState.matches('finished.success')) {
+			clearStorageKeys('edit-character-name', 'edit-character-story')
+			history.push(`/character/${saveState.context.characterId}`)
+		}
+	}, [history, saveState])
 
 	return (
 		<CharacterLayout
@@ -51,12 +68,12 @@ export function EditCharacterPage() {
 			slideshow={
 				<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
 					{slideshowSection}
-					<input id={dropID} {...getInputProps()} />
+					<input id={dropId} {...getInputProps()} />
 					{dropMessage}
 				</div>
 			}
-			name={<CharacterNameInput storageKey="edit-character-name" setter={setName} value={name} />}
-			story={<CharacterStoryInput storageKey="edit-character-story" setter={setStory} value={story} />}
+			name={<CharacterNameInput storageKey="edit-character-name" defaultValue={defaultName} />}
+			story={<CharacterStoryInput storageKey="edit-character-story" defaultValue={defaultStory} />}
 			actions={
 				<>
 					<ActionButton key="cancel" variant="flat" iconName="Back" onClick={cancel} type="button">
@@ -67,6 +84,11 @@ export function EditCharacterPage() {
 					</ActionButton>
 				</>
 			}
-		/>
+		>
+			<SaveDialog
+				isOpen={['uploadingFiles', 'saving', 'finished.error'].some(saveState.matches)}
+				matches={saveState.matches.bind(saveState)}
+			/>
+		</CharacterLayout>
 	)
 }

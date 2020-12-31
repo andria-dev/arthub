@@ -35,6 +35,15 @@ export const auth = firebase.auth()
 export const provider = new firebase.auth.GoogleAuthProvider()
 
 /**
+ * @typedef {{
+ *   characterId: string,
+ *   files: [string],
+ *   name: string,
+ *   story: string
+ * }} Character
+ */
+
+/**
  * @typedef {Object} FirebaseData
  * @property {firebase.User | null} user
  * @property {[Character]} characters
@@ -106,29 +115,28 @@ export function useCharacters() {
 const imageDataURLCache = new Map()
 
 /**
- * Retrieves the URL of an image from a file ID then fetches the image and caches then returns the data URL.
- * @param {string} userID
- * @param {string} fileID
+ * Retrieves the URL of an image from a file Id then fetches the image and caches then returns the data URL.
+ * @param {string} userId
+ * @param {string} fileId
  * @returns {Promise<string|any>}
  */
-export async function fetchImageURL(userID, fileID) {
-	if (imageDataURLCache.has(fileID)) return imageDataURLCache.get(fileID)
+export async function fetchImageURL(userId, fileId) {
+	if (imageDataURLCache.has(fileId)) return imageDataURLCache.get(fileId)
 
-	const url = await storage.ref().child(`${userID}/${fileID}`).getDownloadURL()
+	const url = await storage.ref().child(`${userId}/${fileId}`).getDownloadURL()
 	return await fetch(url)
 		.then(res => res.blob())
 		.then(blob => {
 			const dataURL = URL.createObjectURL(blob)
-			imageDataURLCache.set(fileID, dataURL)
+			imageDataURLCache.set(fileId, dataURL)
 			return dataURL
 		})
 }
 
 /**
- * Takes a character's ID and user document resource and retrieves the specified character.
+ * Takes a character's Id and user document resource and retrieves the specified character.
  * After that, each image is fetched and a resource is created for each fetch
- * @param {string} id The character's ID.
- * @param {ResourceReader<UserData>} resource A resource that contains the user's account data.
+ * @param {string} id The character's Id.
  * @returns {{
  * 	character: Character,
  * 	imageResources: [ResourceReader<string>]
