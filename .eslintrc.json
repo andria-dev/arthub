@@ -1,0 +1,52 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"extends": [
+		"plugin:json/recommended",
+		"plugin:react/recommended",
+		"airbnb"
+	],
+	"parserOptions": {
+		"ecmaFeatures": {
+			"jsx": true
+		},
+		"ecmaVersion": 12,
+		"sourceType": "module"
+	},
+	"plugins": [
+		"react"
+	],
+	"rules": {
+		"no-tabs": "off",
+		"max-len": ["warn", 120],
+		"indent": ["warn", "tab"],
+		"guard-for-in": "off",
+		"no-restricted-syntax": [
+			"error",
+			{
+				"selector": "LabeledStatement",
+				"message": "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
+			},
+			{
+				"selector": "WithStatement",
+				"message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
+			}
+		],
+		"no-console": "off",
+		"no-empty": ["error", {"allowEmptyCatch": true}],
+		"no-param-reassign": ["error", {"props": false}],
+		"object-curly-spacing": ["warn", "never"],
+		"import/prefer-default-export": "off",
+		"import/extensions": ["warn", "ignorePackages"],
+		"react/jsx-indent": ["warn", "tab"],
+		"react/jsx-indent-props": ["warn", "tab"],
+		"react/jsx-filename-extension": ["warn", {"extensions": [".js", ".jsx"]}],
+		"react/react-in-jsx-scope": "off",
+		"react/prop-types": "off",
+		"react/jsx-props-no-spreading": "off",
+		"react/jsx-one-expression-per-line": "off",
+		"react/no-unescaped-entities": "off"
+	}
+}

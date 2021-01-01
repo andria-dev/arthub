@@ -1,3 +1,5 @@
+import {useEffect, useState} from 'react';
+
 /**
  * Finds all trees above or adjacent to the given element that do not contain the given element or element tree.
  *
@@ -26,30 +28,29 @@
  * forEachNonDescendantTree(modal, element => element.inert = true)
  * ````
  *
- * @param {Element} element
- * @param {function(Element)} callback
+ * @param {HTMLElement} element
+ * @param {function(HTMLElement): void} callback
  */
-import {useEffect, useState} from 'react'
 
 export function forEachNonDescendantTree(element, callback) {
-	let currentElement = element
-	const root = document.getElementById('root')
+	let currentElement = element;
+	const root = document.getElementById('root');
 
 	while (currentElement !== root) {
-		let previous = currentElement.previousElementSibling
-		let next = currentElement.nextElementSibling
+		let previous = currentElement.previousElementSibling;
+		let next = currentElement.nextElementSibling;
 
 		while (previous) {
-			callback(previous)
-			previous = previous.previousElementSibling
+			callback(previous);
+			previous = previous.previousElementSibling;
 		}
 
 		while (next) {
-			callback(next)
-			next = next.nextElementSibling
+			callback(next);
+			next = next.nextElementSibling;
 		}
 
-		currentElement = currentElement.parentElement
+		currentElement = currentElement.parentElement;
 	}
 }
 
@@ -62,7 +63,7 @@ export function forEachNonDescendantTree(element, callback) {
  * @returns {Array<T>}
  */
 export function removeFromArray(array, index) {
-	return array.slice(0, index).concat(array.slice(index + 1))
+	return array.slice(0, index).concat(array.slice(index + 1));
 }
 
 /**
@@ -77,7 +78,7 @@ export function removeFromArray(array, index) {
  * @returns {Array<T|O>}
  */
 export function replaceInArray(array, index, callback) {
-	return array.slice(0, index).concat(callback(array[index]), array.slice(index + 1))
+	return array.slice(0, index).concat(callback(array[index]), array.slice(index + 1));
 }
 
 /**
@@ -85,21 +86,21 @@ export function replaceInArray(array, index, callback) {
  * @returns {'top' | 'scrolled'}
  */
 export function useScrollStatus() {
-	const [scrollStatus, setScrollStatus] = useState('top')
+	const [scrollStatus, setScrollStatus] = useState('top');
 
 	useEffect(() => {
 		function handler() {
-			setScrollStatus(prevStatus => {
-				if (window.scrollY > 0) return 'scrolled'
-				return 'top'
-			})
+			setScrollStatus(() => {
+				if (window.scrollY > 0) return 'scrolled';
+				return 'top';
+			});
 		}
 
-		window.addEventListener('scroll', handler)
+		window.addEventListener('scroll', handler);
 		return () => {
-			window.removeEventListener('scroll', handler)
-		}
-	}, [])
+			window.removeEventListener('scroll', handler);
+		};
+	}, []);
 
-	return scrollStatus
+	return scrollStatus;
 }

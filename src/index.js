@@ -1,32 +1,32 @@
-import {StrictMode, Suspense} from 'react'
-import ReactDOM from 'react-dom'
+import {StrictMode, Suspense} from 'react';
+import ReactDOM from 'react-dom';
 
-import {loadTheme, Spinner} from '@fluentui/react'
-import {Route, Redirect} from 'react-router-dom'
-import {initializeIcons} from 'office-ui-fabric-react/lib/Icons'
+import {loadTheme} from '@fluentui/react';
+import {Route, Redirect} from 'react-router-dom';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {initializeIcons} from 'office-ui-fabric-react/lib/Icons';
 
-import {Landing} from './pages/landing.js'
-import {Login, Register} from './pages/login.js'
-import {Home} from './pages/home.js'
-import {NewCharacter} from './pages/new-character.js'
-import {CharacterPage} from './pages/character.js'
-import {EditCharacterPage} from './pages/edit-character.js'
-import {NoRoute} from './pages/404.js'
+import {Landing} from './pages/landing.js';
+import {Login, Register} from './pages/login.js';
+import {Home} from './pages/home.js';
+import {NewCharacter} from './pages/new-character.js';
+import {CharacterPage} from './pages/character.js';
+import {EditCharacterPage} from './pages/edit-character.js';
+import {NoRoute} from './pages/404.js';
 
-import {Center} from './components/Center.js'
-import {Loading} from './components/Loading.js'
-import {FadeLayout} from './components/FadeLayout.js'
-import {BasicBoundary} from './components/BasicBoundary.js'
-import {TransitionRouter} from './components/TransitionRouter.js'
+import {Loading} from './components/Loading.js';
+import {FadeLayout} from './components/FadeLayout.js';
+import {BasicBoundary} from './components/BasicBoundary.js';
+import {TransitionRouter} from './components/TransitionRouter.js';
 
-import {theme} from './shared/theme.js'
-import {FirebaseProvider, useUser} from './shared/firebase.js'
-import * as serviceWorker from './serviceWorker.js'
+import {theme} from './shared/theme.js';
+import {FirebaseProvider, useUser} from './shared/firebase.js';
+import * as serviceWorker from './serviceWorker.js';
 
-import './styles/index.css'
+import './styles/index.css';
 
-loadTheme(theme)
-initializeIcons()
+loadTheme(theme);
+initializeIcons();
 
 /**
  * A route that will only render when logged in. Redirects to "/login" when logged out.
@@ -34,14 +34,14 @@ initializeIcons()
  * @constructor
  */
 function PrivateRoute({as, ...props}) {
-	const user = useUser()
+	const user = useUser();
 
-	if (user) return <Route component={as} {...props} />
+	if (user) return <Route component={as} {...props} />;
 	return (
 		<FadeLayout>
 			<Redirect to="/login" />
 		</FadeLayout>
-	)
+	);
 }
 
 /**
@@ -50,14 +50,14 @@ function PrivateRoute({as, ...props}) {
  * @constructor
  */
 function UnauthenticatedRoute({as, ...props}) {
-	const user = useUser()
+	const user = useUser();
 
-	if (!user) return <Route component={as} {...props} />
+	if (!user) return <Route component={as} {...props} />;
 	return (
 		<FadeLayout>
 			<Redirect to="/" />
 		</FadeLayout>
-	)
+	);
 }
 
 ReactDOM.render(
@@ -80,9 +80,9 @@ ReactDOM.render(
 		</BasicBoundary>
 	</StrictMode>,
 	document.getElementById('root'),
-)
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister()
+serviceWorker.unregister();

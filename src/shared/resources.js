@@ -1,57 +1,56 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useState} from 'react';
 
 /**
  * This function handles the reading of a resource — suspension, results, and errors.
  * Throws the suspender if loading. Returns the result if successful. Throws the error if one occurred.
  *
  * @template V
- * @param {{status: string, suspender: Promise, result: V}} resource
+ * @param {{status: string, suspender: Promise<V>, result: V}} resource
  * @returns {V}
  */
 export function readResource({status, suspender, result}) {
 	switch (status) {
-		case 'loading':
-			throw suspender
-		case 'error':
-			throw result
-		case 'success':
-		default:
-			return result
+	case 'loading':
+		throw suspender;
+	case 'error':
+		throw result;
+	case 'success':
+	default:
+		return result;
 	}
 }
 
 /**
- * @typedef {Object} ResourceReader
  * @template V
- * @property {function(): V} read
+ * @typedef {{read: function(): V}} ResourceReader
  */
 
 /**
  * Creates a resource for use with the React Suspense API based on a Promise.
  *
  * @template V
- * @param {Promise} promise
+ * @param {Promise<V>} promise
  * @returns {ResourceReader<V>}
  */
 export function createResource(promise) {
-	let status = 'loading'
-	let result
+	let status = 'loading';
+	let result;
 
 	const suspender = promise
-		.then(value => {
-			status = 'success'
-			result = value
+		.then((value) => {
+			status = 'success';
+			result = value;
 		})
-		.catch(error => {
-			status = 'error'
-			result = error
-		})
+		.catch((error) => {
+			status = 'error';
+			result = error;
+		});
 
 	return {
 		read() {
-			return readResource({status, suspender, result})
+			return readResource({status, suspender, result});
 		},
-	}
+	};
 }
 
 /**
@@ -60,43 +59,43 @@ export function createResource(promise) {
  *
  * @template V
  * @template E
- * @param {function(function(V, E))} subscribe
+ * @param {function(function(V, E): void): function(): void} subscribe
  * @returns {ResourceReader<V>}
  */
 export function createResourceFromSubscription(subscribe) {
-	let status = 'loading'
-	let result
+	let status = 'loading';
+	let result;
 
 	const suspender = new Promise((resolve, reject) => {
 		const unsubscribe = subscribe((data, error) => {
-			unsubscribe()
+			unsubscribe();
 			if (error) {
-				status = 'error'
-				result = error
-				reject(error)
+				status = 'error';
+				result = error;
+				reject(error);
 			} else {
-				status = 'success'
-				result = data
-				resolve(data)
+				status = 'success';
+				result = data;
+				resolve(data);
 			}
-		})
-	})
+		});
+	});
 
 	return {
 		read() {
-			return readResource({status, suspender, result})
+			return readResource({status, suspender, result});
 		},
-	}
+	};
 }
 
 /**
  * Creates a resource from a Firebase Document.
  * @template V
- * @param {DocumentReference<V>} documentRef
+ * @param {firebase.firestore.DocumentReference<V>} documentRef
  * @returns {ResourceReader<V>}
  */
 export function createDocumentResource(documentRef) {
-	return createResource(documentRef.get().then(doc => doc.data()))
+	return createResource(documentRef.get().then((doc) => doc.data()));
 }
 
 /**
@@ -104,25 +103,25 @@ export function createDocumentResource(documentRef) {
  * Then, whenever the document's data changes, this hook will update the returned value.
  *
  * @template V
- * @param {DocumentReference<V>} documentRef
+ * @param {firebase.firestore.DocumentReference<V>} documentRef
  * @param {ResourceReader<V>} resource
  * @returns {V}
  */
 export function useDocumentResource(documentRef, resource) {
-	const [result, setResult] = useState(resource.read())
+	const [result, setResult] = useState(resource.read());
 
 	useEffect(() => {
-		let isFirst = true
+		let isFirst = true;
 		return documentRef.onSnapshot((snapshot, error) => {
 			if (isFirst) {
-				isFirst = false
-				return
+				isFirst = false;
+				return;
 			}
 
-			if (error) console.warn(error)
-			else setResult(snapshot.data())
-		})
-	}, [documentRef])
+			if (error) console.warn(error);
+			else setResult(snapshot.data());
+		});
+	}, [documentRef]);
 
-	return result
+	return result;
 }

@@ -1,39 +1,52 @@
-import {memo, Suspense, useEffect, useRef, useState} from 'react'
-import {Label, Spinner} from '@fluentui/react'
+import {
+	Suspense, useEffect, useRef, useState,
+} from 'react';
 
-import {Center} from './Center.js'
-import {colors} from '../shared/theme.js'
-import {artworkWrapperStyles} from './slideshow-parts.js'
-import {FadeLayout} from './FadeLayout'
-import {debounce} from 'mini-debounce'
-import {useId} from '@reach/auto-id'
-import 'trix'
-import 'trix/dist/trix.css'
-import xss from 'xss'
-import {Loading} from './Loading'
+import {Label} from '@fluentui/react';
+import {debounce} from 'mini-debounce';
+import {useId} from '@reach/auto-id';
+
+import {colors} from '../shared/theme.js';
+import {artworkWrapperStyles} from './slideshow-parts.js';
+import {FadeLayout} from './FadeLayout.js';
+import {Loading} from './Loading.js';
+
+import 'trix';
+import 'trix/dist/trix.css';
 
 /**
  * A component to facilitate in reduction of repeating layout code for pages that display character info.
  *
  * @param {{
+ *   className?: string,
  *   mode: 'display',
  *   slideshow: JSX.Element,
  *   name: JSX.Element,
  *   story: JSX.Element,
- *   actions: [JSX.Element],
- *   children: any,
+ *   actions: import('react').ReactNode,
+ *   children?: any,
+ *   onSubmit?: undefined,
  * } | {
+ *   className?: string,
  *   mode: 'edit',
- *   onSubmit: function(React.SyntheticEvent),
+ *   onSubmit: function(React.SyntheticEvent): void,
  *   slideshow: JSX.Element,
  *   name: JSX.Element,
  *   story: JSX.Element,
- *   actions: [JSX.Element],
- *   children: any,
+ *   actions: import('react').ReactNode,
+ *   children?: any,
  * }} props
- * @constructor
  */
-export function CharacterLayout({className, slideshow, name, story, actions, mode, onSubmit, children}) {
+export function CharacterLayout({
+	className,
+	slideshow,
+	name,
+	story,
+	actions,
+	mode,
+	onSubmit,
+	children,
+}) {
 	const content = (
 		<main style={{height: 'calc(100% - 62px)'}}>
 			<div
@@ -49,7 +62,10 @@ export function CharacterLayout({className, slideshow, name, story, actions, mod
 					{slideshow}
 				</Suspense>
 
-				<article style={{padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1}}>
+				<article style={{
+					padding: '0 31px', display: 'flex', flexDirection: 'column', flexGrow: 1,
+				}}
+				>
 					{name}
 					{story}
 				</article>
@@ -70,16 +86,16 @@ export function CharacterLayout({className, slideshow, name, story, actions, mod
 				{actions}
 			</section>
 		</main>
-	)
+	);
 
-	let wrapped
+	let wrapped;
 	if (mode === 'display') {
 		wrapped = (
 			<FadeLayout style={{height: '100%'}} className={className}>
 				{content}
 				{children}
 			</FadeLayout>
-		)
+		);
 	} else if (mode === 'edit') {
 		wrapped = (
 			<FadeLayout style={{height: '100%'}} className={className}>
@@ -88,76 +104,92 @@ export function CharacterLayout({className, slideshow, name, story, actions, mod
 				</form>
 				{children}
 			</FadeLayout>
-		)
+		);
 	} else {
-		throw new Error(`Invalid mode '${mode}' is not supported.`)
+		throw new Error(`Invalid mode '${mode}' is not supported.`);
 	}
 
-	return wrapped
+	return wrapped;
 }
 
+/**
+ *
+ * @param {{defaultValue?: string, onChange?: function(string): void, [s: string]: any}} props
+ */
 export function Trix({defaultValue, onChange, ...props}) {
-	const ref = useRef()
+	const ref = useRef(null);
 
 	useEffect(() => {
 		try {
-			const json = JSON.parse(defaultValue)
-			if (json) ref.current.editor.loadJSON(json)
-		} catch {}
-	}, [defaultValue])
+			const json = JSON.parse(defaultValue);
+			if (json) ref.current.editor.loadJSON(json);
+		} catch {
+		}
+	}, [defaultValue]);
 
 	useEffect(() => {
-		const trix = ref.current
-		function handler(event) {
-			if (onChange) onChange(JSON.stringify(ref.current.editor.toJSON()))
+		const trix = ref.current;
+		function handler() {
+			if (onChange) onChange(JSON.stringify(ref.current.editor.toJSON()));
 		}
-		trix.addEventListener('trix-change', handler)
+		trix.addEventListener('trix-change', handler);
 		return () => {
-			trix.removeEventListener('trix-change', handler)
-		}
-	}, [onChange])
+			trix.removeEventListener('trix-change', handler);
+		};
+	}, [onChange]);
 
-	return <trix-editor ref={ref} {...props} />
+	// @ts-ignore
+	return <trix-editor ref={ref} {...props} />;
 }
-export const CharacterStory = ({story}) => <Trix contentEditable={false} defaultValue={story} />
+export const CharacterStory = ({story}) => <Trix contentEditable={false} defaultValue={story} />;
 
-export function CharacterInput({className, multiline, label, ...props}) {
-	const [status, setStatus] = useState('idle')
+/**
+ *
+ * @param {{id?: string, className?: string, multiline?: boolean, label: string, [s: string]: any}} props
+ */
+export function CharacterInput({
+	id, className, multiline, label, ...props
+}) {
+	const [status, setStatus] = useState('idle');
 	const focusHandlers = {
 		onFocus() {
-			setStatus('focus')
+			setStatus('focus');
 		},
 		onBlur() {
-			setStatus('idle')
+			setStatus('idle');
 		},
-	}
+	};
 
 	return (
-		<div className={'CharacterInput ' + (className ?? '')}>
+		<div className={`CharacterInput ${className ?? ''}`}>
 			{label && (
-				<Label htmlFor={props.id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>
+				<Label htmlFor={id} style={{textDecoration: status === 'focus' ? 'underline' : 'none'}}>
 					{label}
 				</Label>
 			)}
-			{multiline ? <Trix {...props} {...focusHandlers} /> : <input {...props} {...focusHandlers} />}
+			{
+				multiline
+					? <Trix id={id} {...props} {...focusHandlers} />
+					: <input id={id} {...props} {...focusHandlers} />
+			}
 		</div>
-	)
+	);
 }
 
-const debouncedSetItem = debounce((key, value) => localStorage.setItem(key, value), 100)
+const debouncedSetItem = debounce((key, value) => localStorage.setItem(key, value), 100);
 export function createValueStorer(key) {
-	return event => {
-		debouncedSetItem(key, event instanceof Event ? event.target.value : event)
-	}
+	return (event) => {
+		debouncedSetItem(key, event instanceof Event ? event.target.value : event);
+	};
 }
 export function clearStorageKeys(...keys) {
 	for (const key of keys) {
-		localStorage.setItem(key, '')
+		localStorage.setItem(key, '');
 	}
 }
 
 export function CharacterNameInput({storageKey, defaultValue}) {
-	const id = useId('name')
+	const id = useId('name');
 	return (
 		<CharacterInput
 			id={id}
@@ -168,10 +200,10 @@ export function CharacterNameInput({storageKey, defaultValue}) {
 			defaultValue={defaultValue}
 			required
 		/>
-	)
+	);
 }
-export function CharacterStoryInput({storageKey, setter, defaultValue}) {
-	const id = useId('story')
+export function CharacterStoryInput({storageKey, defaultValue}) {
+	const id = useId('story');
 	return (
 		<CharacterInput
 			id={id}
@@ -184,5 +216,5 @@ export function CharacterStoryInput({storageKey, setter, defaultValue}) {
 			multiline
 			required
 		/>
-	)
+	);
 }

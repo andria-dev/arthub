@@ -1,13 +1,15 @@
-import {ActionButton} from './ActionButton'
-import {colors} from '../shared/theme'
-import {useMachine} from '@xstate/react'
-import {uploadSlideshowMachine} from '../shared/machines'
-import {useDropzone} from 'react-dropzone'
-import {FontIcon, Text} from '@fluentui/react'
-import {useId} from '@reach/auto-id'
-import {emptyArray} from '../shared/empty'
-import {Center} from './Center'
+import {useMachine} from '@xstate/react';
+import {useDropzone} from 'react-dropzone';
+import {FontIcon, Text} from '@fluentui/react';
+import {useId} from '@reach/auto-id';
 
+import {uploadSlideshowMachine} from '../shared/machines.js';
+import {colors} from '../shared/theme.js';
+import {ActionButton} from './ActionButton.js';
+import {emptyArray} from '../shared/empty.js';
+import {Center} from './Center.js';
+
+/** @type {React.CSSProperties} */
 export const artworkWrapperStyles = {
 	position: 'relative',
 	backgroundColor: colors.lightOrange,
@@ -16,12 +18,14 @@ export const artworkWrapperStyles = {
 	display: 'flex',
 	justifyContent: 'center',
 	alignItems: 'center',
-}
+};
+
+/** @type {React.CSSProperties} */
 export const artworkStyles = {
 	objectFit: 'contain',
 	maxWidth: '100%',
 	maxHeight: '100%',
-}
+};
 
 const nextButtonStyles = {
 	position: 'absolute',
@@ -31,7 +35,7 @@ const nextButtonStyles = {
 	height: 46,
 	borderRadius: 0,
 	borderTopLeftRadius: 8,
-}
+};
 export function NextButton(props) {
 	return (
 		<ActionButton
@@ -43,7 +47,7 @@ export function NextButton(props) {
 			style={nextButtonStyles}
 			{...props}
 		/>
-	)
+	);
 }
 
 const previousButtonStyles = {
@@ -55,7 +59,7 @@ const previousButtonStyles = {
 	borderRadius: 0,
 	borderBottomRightRadius: 8,
 	zIndex: 2,
-}
+};
 export function PreviousButton(props) {
 	return (
 		<ActionButton
@@ -67,14 +71,14 @@ export function PreviousButton(props) {
 			style={previousButtonStyles}
 			{...props}
 		/>
-	)
+	);
 }
 
 export const artistSVGStyles = {
 	width: 298,
 	height: 220,
 	marginBottom: 5,
-}
+};
 export const removeButtonStyles = {
 	position: 'absolute',
 	top: 0,
@@ -83,26 +87,29 @@ export const removeButtonStyles = {
 	height: 46,
 	borderRadius: 0,
 	borderBottomLeftRadius: 8,
-}
+};
 export const dropZoneMessages = {
 	accepted: 'File is valid, drop it to upload it!',
 	rejected: 'This file is not a valid photo.',
 	idle: 'Drop your character photos above.',
-}
+};
 
 /**
  * Handles Suspense part of rendering a pre-existing photo for the character editor
- * @param {ResourceReader<string>} resource
+ * @param {import('../shared/resources').ResourceReader<string>} resource
  * @returns {JSX.Element}
  * @constructor
  */
 function PreExistingPhoto({resource}) {
-	return <img src={resource.read()} alt="" style={artworkStyles} />
+	return <img src={resource.read()} alt="" style={artworkStyles} />;
 }
 /**
  *
- * @param {[{id: string, resource: ResourceReader<string>, scheduledForRemoval: boolean}]} preExistingPhotos
- * @returns {{preExistingPhotos: ([]|*), fileRejections: FileRejection[], isFileDialogActive: boolean, dropMessage: JSX.Element, inputRef: React.RefObject<HTMLInputElement>, isDragReject: boolean, isFocused: boolean, getInputProps(props?: DropzoneInputProps): DropzoneInputProps, acceptedFiles: File[], slideshowSection: JSX.Element, draggedFiles: File[], isDragAccept: boolean, rootRef: React.RefObject<HTMLElement>, getRootProps(props?: DropzoneRootProps): DropzoneRootProps, dropId: string, isDragActive: boolean, files, open(): void}}
+ * @param {Array<{
+ * 	id: string,
+ * 	resource: import('../shared/resources').ResourceReader<string>,
+ * 	scheduledForRemoval: boolean,
+ * }>} preExistingPhotos
  */
 export function useSlideshow(preExistingPhotos = emptyArray) {
 	const [state, send] = useMachine(
@@ -110,23 +117,23 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 			...uploadSlideshowMachine.context,
 			preExistingPhotos,
 		}),
-	)
+	);
 	const dropzone = useDropzone({
 		accept: 'image/*',
 		onDropAccepted(acceptedFiles) {
 			// handle cancelled file operations
-			const filesWithPreview = acceptedFiles.map(file => {
-				file.preview = URL.createObjectURL(file)
-				return file
-			})
-			send('ADDED_PHOTOS', {data: filesWithPreview})
+			const filesWithPreview = acceptedFiles.map((file) => {
+				file.preview = URL.createObjectURL(file);
+				return file;
+			});
+			send('ADDED_PHOTOS', {data: filesWithPreview});
 		},
-	})
+	});
 
-	const previousButton = <PreviousButton onClick={() => send('PREVIOUS')} />
-	const nextButton = <NextButton onClick={() => send('NEXT')} />
+	const previousButton = <PreviousButton onClick={() => send('PREVIOUS')} />;
+	const nextButton = <NextButton onClick={() => send('NEXT')} />;
 
-	let slideshowSection
+	let slideshowSection;
 	if (state.matches('noPhotos')) {
 		slideshowSection = (
 			<div
@@ -145,7 +152,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 					{...dropzone.getRootProps({style: artistSVGStyles})}
 				/>
 			</div>
-		)
+		);
 	} else if (state.matches('newPhotosPage')) {
 		// TODO: Make drop target accessible
 		slideshowSection = (
@@ -157,7 +164,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 					{...dropzone.getRootProps({style: {color: colors.realPink, fontSize: 118}})}
 				/>
 			</div>
-		)
+		);
 	} else if (state.matches('newPhotos')) {
 		slideshowSection = (
 			<div style={artworkWrapperStyles}>
@@ -174,9 +181,9 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 				/>
 				{nextButton}
 			</div>
-		)
+		);
 	} else if (state.matches('preExistingPhotos')) {
-		const currentPhoto = state.context.preExistingPhotos[state.context.currentPage]
+		const currentPhoto = state.context.preExistingPhotos[state.context.currentPage];
 		slideshowSection = (
 			<div style={artworkWrapperStyles}>
 				{state.context.currentPage > 0 ? previousButton : null}
@@ -211,24 +218,24 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 				)}
 				{nextButton}
 			</div>
-		)
+		);
 	}
 
-	let dropMessageContent
-	if (dropzone.isDragReject) dropMessageContent = dropZoneMessages.rejected
-	else if (dropzone.isDragAccept) dropMessageContent = dropZoneMessages.accepted
-	else dropMessageContent = dropZoneMessages.idle
+	let dropMessageContent;
+	if (dropzone.isDragReject) dropMessageContent = dropZoneMessages.rejected;
+	else if (dropzone.isDragAccept) dropMessageContent = dropZoneMessages.accepted;
+	else dropMessageContent = dropZoneMessages.idle;
 
-	const dropId = useId('drop')
-	let dropMessage
+	const dropId = useId('drop');
+	let dropMessage;
 	/* TODO: align center on Desktop sizes */
-	if (state.matches('photos'))
+	if (state.matches('photos')) {
 		dropMessage = (
 			<Text variant="higherTitle" style={{textAlign: 'right', padding: '0 31px', marginTop: 10}}>
 				Edit your character photos above.
 			</Text>
-		)
-	else
+		);
+	} else {
 		dropMessage = (
 			<Text
 				as="label"
@@ -238,7 +245,8 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 			>
 				{dropMessageContent}
 			</Text>
-		)
+		);
+	}
 
 	return {
 		...dropzone,
@@ -247,5 +255,5 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 		slideshowSection,
 		files: state.context.files,
 		preExistingPhotos: state.context.preExistingPhotos,
-	}
+	};
 }

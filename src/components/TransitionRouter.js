@@ -1,5 +1,5 @@
-import {AnimatePresence} from 'framer-motion'
-import {BrowserRouter, Route, Switch} from 'react-router-dom'
+import {AnimatePresence} from 'framer-motion';
+import {BrowserRouter, Route, Switch} from 'react-router-dom';
 
 export function TransitionRouter({children}) {
 	function AnimatedSwitch({location}) {
@@ -9,12 +9,12 @@ export function TransitionRouter({children}) {
 					{children}
 				</Switch>
 			</AnimatePresence>
-		)
+		);
 	}
 
 	return (
 		<BrowserRouter>
 			<Route render={AnimatedSwitch} />
 		</BrowserRouter>
-	)
+	);
 }

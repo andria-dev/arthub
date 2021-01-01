@@ -1,13 +1,15 @@
-import {assign, createMachine} from 'xstate'
-import gravatar from 'gravatar'
-import {v1 as uuidv1} from 'uuid'
+import {createContext} from 'react';
 
-import * as firebase from 'firebase'
-import {corsAnywhere, firestore, storage} from './firebase.js'
-import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors'
-import {removeFromArray, replaceInArray} from './helpers'
-import {createContext} from 'react'
+import {assign, createMachine} from 'xstate';
+import gravatar from 'gravatar';
+import {v1 as uuidv1} from 'uuid';
+import * as firebase from 'firebase';
 
+import {corsAnywhere, firestore, storage} from './firebase.js';
+import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors.js';
+import {removeFromArray, replaceInArray} from './helpers.js';
+
+/** @type {import('xstate').StateMachine<{currentPage: number, files: Array, preExistingPhotos: Array}>} @ts-ignore */
 export const uploadSlideshowMachine = createMachine(
 	{
 		id: 'upload-slideshow',
@@ -131,40 +133,49 @@ export const uploadSlideshowMachine = createMachine(
 	},
 	{
 		actions: {
-			decrementPage: assign({currentPage: ctx => ctx.currentPage - 1}),
-			decrementPageOrZero: assign({currentPage: ctx => Math.max(ctx.currentPage - 1, 0)}),
-			incrementPage: assign({currentPage: ctx => ctx.currentPage + 1}),
+			decrementPage: assign({currentPage: (ctx) => ctx.currentPage - 1}),
+			decrementPageOrZero: assign({currentPage: (ctx) => Math.max(ctx.currentPage - 1, 0)}),
+			incrementPage: assign({currentPage: (ctx) => ctx.currentPage + 1}),
 			goToFirstPage: assign({currentPage: 0}),
-			goToLastPageOfPreExistingPhotos: assign({currentPage: ctx => ctx.preExistingPhotos.length - 1}),
-			goToLastPageOfNewPhotos: assign({currentPage: ctx => ctx.files.length - 1}),
+			goToLastPageOfPreExistingPhotos: assign({currentPage: (ctx) => ctx.preExistingPhotos.length - 1}),
+			goToLastPageOfNewPhotos: assign({currentPage: (ctx) => ctx.files.length - 1}),
 			removeNewPhoto: assign({
 				files: ({files, currentPage}) => removeFromArray(files, currentPage),
 			}),
 			addNewPhotos: assign({
+				// @ts-ignore
 				files: (ctx, event) => ctx.files.concat(event.data),
 			}),
 			scheduleForRemoval: assign({
-				preExistingPhotos: ({preExistingPhotos, currentPage}) =>
-					replaceInArray(preExistingPhotos, currentPage, photo => ({...photo, scheduledForRemoval: true})),
+				preExistingPhotos:
+					({preExistingPhotos, currentPage}) => replaceInArray(
+						preExistingPhotos,
+						currentPage,
+						(photo) => ({...photo, scheduledForRemoval: true}),
+					),
 			}),
 			cancelRemoval: assign({
-				preExistingPhotos: ({preExistingPhotos, currentPage}) =>
-					replaceInArray(preExistingPhotos, currentPage, photo => ({...photo, scheduledForRemoval: false})),
+				preExistingPhotos:
+					({preExistingPhotos, currentPage}) => replaceInArray(
+						preExistingPhotos,
+						currentPage,
+						(photo) => ({...photo, scheduledForRemoval: false}),
+					),
 			}),
 		},
 		guards: {
-			atEndOfPreExistingPhotos: ctx => ctx.currentPage >= ctx.preExistingPhotos.length - 1,
-			atEndOfPreExistingPhotosButNewPhotosRemain: ctx =>
-				ctx.currentPage >= ctx.preExistingPhotos.length - 1 && ctx.files.length > 0,
-			noPreExistingPhotos: ctx => ctx.preExistingPhotos.length === 0,
-			notAtBeginning: ctx => ctx.currentPage > 0,
-			atEndOfNewPhotos: ctx => ctx.currentPage >= ctx.files.length - 1,
-			atLeastOneNewPhotoLeft: ctx => ctx.files.length > 0,
-			atLeastOneNewPhotoLeftAfterRemoval: ctx => ctx.files.length > 1,
-			atLeastOnePreExistingPhotoLeft: ctx => ctx.preExistingPhotos.length > 0,
+			atEndOfPreExistingPhotos: (ctx) => ctx.currentPage >= ctx.preExistingPhotos.length - 1,
+			atEndOfPreExistingPhotosButNewPhotosRemain:
+				(ctx) => ctx.currentPage >= ctx.preExistingPhotos.length - 1 && ctx.files.length > 0,
+			noPreExistingPhotos: (ctx) => ctx.preExistingPhotos.length === 0,
+			notAtBeginning: (ctx) => ctx.currentPage > 0,
+			atEndOfNewPhotos: (ctx) => ctx.currentPage >= ctx.files.length - 1,
+			atLeastOneNewPhotoLeft: (ctx) => ctx.files.length > 0,
+			atLeastOneNewPhotoLeftAfterRemoval: (ctx) => ctx.files.length > 1,
+			atLeastOnePreExistingPhotoLeft: (ctx) => ctx.preExistingPhotos.length > 0,
 		},
 	},
-)
+);
 
 export const slideshowMachine = createMachine(
 	{
@@ -178,7 +189,7 @@ export const slideshowMachine = createMachine(
 			idle: {
 				always: [
 					{
-						cond: ctx => ctx.numberOfImages > 0,
+						cond: (ctx) => ctx.numberOfImages > 0,
 						target: 'photos',
 					},
 					{
@@ -207,18 +218,18 @@ export const slideshowMachine = createMachine(
 	},
 	{
 		actions: {
-			decrementPage: assign({currentPage: ctx => ctx.currentPage - 1}),
-			decrementPageOrZero: assign({currentPage: ctx => Math.max(ctx.currentPage - 1, 0)}),
-			incrementPage: assign({currentPage: ctx => ctx.currentPage + 1}),
+			decrementPage: assign({currentPage: (ctx) => ctx.currentPage - 1}),
+			decrementPageOrZero: assign({currentPage: (ctx) => Math.max(ctx.currentPage - 1, 0)}),
+			incrementPage: assign({currentPage: (ctx) => ctx.currentPage + 1}),
 		},
 		guards: {
-			notAtBeginningOfPhotos: ctx => ctx.currentPage > 0,
-			notAtEndOfPhotos: ctx => ctx.currentPage < ctx.numberOfImages - 1,
+			notAtBeginningOfPhotos: (ctx) => ctx.currentPage > 0,
+			notAtEndOfPhotos: (ctx) => ctx.currentPage < ctx.numberOfImages - 1,
 		},
 	},
-)
+);
 
-export const ProfileMenuContext = createContext([{}, {}, {}])
+export const ProfileMenuContext = createContext([]);
 export const profileMenuMachine = createMachine({
 	id: 'profile-menu',
 	initial: 'closed',
@@ -260,36 +271,37 @@ export const profileMenuMachine = createMachine({
 			},
 		},
 	},
-})
+});
 
-const gravatarCache = new Map()
+const gravatarCache = new Map();
 async function fetchGravatarThumbnail(email) {
-	if (gravatarCache.has(email)) return gravatarCache.get(email)
+	if (gravatarCache.has(email)) return gravatarCache.get(email);
 
-	const profileURL = gravatar.profile_url(email)
+	const profileURL = gravatar.profile_url(email);
 	try {
 		const data = await corsAnywhere
 			.get(profileURL, {
+				// @ts-ignore
 				responseType: 'json',
 				headers: {
 					'X-Requested-With': 'ky',
 				},
 			})
-			.json()
-		const photoURL = data.entry[0].thumbnailUrl
+			.json();
+		const photoURL = data.entry[0].thumbnailUrl;
 
 		try {
-			const blob = await corsAnywhere.get(photoURL).blob()
-			const url = URL.createObjectURL(blob)
-			gravatarCache.set(email, url)
-			return url
+			const blob = await corsAnywhere.get(photoURL).blob();
+			const url = URL.createObjectURL(blob);
+			gravatarCache.set(email, url);
+			return url;
 		} catch (error) {
-			throw new UnreachableGravatarPhotoError(email, error?.response)
+			throw new UnreachableGravatarPhotoError(email, error?.response);
 		}
 	} catch (error) {
-		if (error instanceof UnreachableGravatarPhotoError) throw error
-		else if (error?.response?.status === 404) throw new MissingGravatarProfileError(email, error?.response)
-		else throw new UnreachableGravatarProfileError(email, error?.response)
+		if (error instanceof UnreachableGravatarPhotoError) throw error;
+		else if (error?.response?.status === 404) throw new MissingGravatarProfileError(email, error?.response);
+		else throw new UnreachableGravatarProfileError(email, error?.response);
 	}
 }
 export const gravatarMachine = createMachine({
@@ -322,16 +334,13 @@ export const gravatarMachine = createMachine({
 				},
 				onError: [
 					{
-						cond: (ctx, event) => {
-							return event?.data instanceof MissingGravatarProfileError
-						},
+						cond: (ctx, event) => event?.data instanceof MissingGravatarProfileError,
 						target: 'idle.non_existent',
 					},
 					{
 						actions: assign({
 							error(ctx, event) {
-								console.log(event?.data)
-								return event?.data
+								return event?.data;
 							},
 						}),
 						target: 'idle.failure',
@@ -341,7 +350,7 @@ export const gravatarMachine = createMachine({
 			on: {FETCH: 'loading'},
 		},
 	},
-})
+});
 
 export const saveCharacterMachine = createMachine(
 	{
@@ -362,7 +371,7 @@ export const saveCharacterMachine = createMachine(
 		states: {
 			idle: {
 				entry: assign({
-					characterId: ctx => ctx.characterId || uuidv1(),
+					characterId: (ctx) => ctx.characterId || uuidv1(),
 				}),
 				on: {
 					SAVE_NEW_CHARACTER: {
@@ -378,14 +387,12 @@ export const saveCharacterMachine = createMachine(
 			uploadingFiles: {
 				entry: ['getUploadInformation', 'createIdsForNewPhotos'],
 				invoke: {
-					src: ({files, fileIds, uid}, event) => {
-						return Promise.all(
-							files.map((file, index) => {
-								const ref = storage.ref().child(`${uid}/${fileIds[index]}`)
-								return ref.put(file)
-							}),
-						)
-					},
+					src: ({files, fileIds, uid}) => Promise.all(
+						files.map((file, index) => {
+							const ref = storage.ref().child(`${uid}/${fileIds[index]}`);
+							return ref.put(file);
+						}),
+					),
 					onDone: [
 						{
 							cond: 'isNewCharacter',
@@ -396,7 +403,7 @@ export const saveCharacterMachine = createMachine(
 						},
 					],
 					onError: {
-						action: ['cleanUpFileTransfers', 'setError'],
+						actions: ['cleanUpFileTransfers', 'setError'],
 						target: 'finished.error',
 					},
 				},
@@ -405,19 +412,19 @@ export const saveCharacterMachine = createMachine(
 				states: {
 					new: {
 						invoke: {
-							src: ({characterId, fileIds, name, story, uid}) => {
-								return firestore
-									.collection('users')
-									.doc(uid)
-									.update({
-										characters: firebase.firestore.FieldValue.arrayUnion({
-											id: characterId,
-											files: fileIds,
-											name,
-											story,
-										}),
-									})
-							},
+							src: ({
+								characterId, fileIds, name, story, uid,
+							}) => firestore
+								.collection('users')
+								.doc(uid)
+								.update({
+									characters: firebase.firestore.FieldValue.arrayUnion({
+										id: characterId,
+										files: fileIds,
+										name,
+										story,
+									}),
+								}),
 							onDone: '#save-character.finished.success',
 							onError: {
 								target: '#save-character.finished.error',
@@ -427,36 +434,39 @@ export const saveCharacterMachine = createMachine(
 					},
 					edits: {
 						invoke: {
-							src: ({characters, characterId, preExistingPhotos, fileIds, name, story, uid}) => {
+							src: ({
+								characters, characterId, preExistingPhotos, fileIds, name, story, uid,
+							}) => {
 								const newFiles = preExistingPhotos
-									.filter(photo => !photo.scheduledForRemoval)
-									.map(photo => photo.id)
-									.concat(fileIds)
-								const characterIndex = characters.findIndex(character => character.id === characterId)
+									.filter((photo) => !photo.scheduledForRemoval)
+									.map((photo) => photo.id)
+									.concat(fileIds);
+								const characterIndex = characters.findIndex(
+									(character) => character.id === characterId,
+								);
 
 								// No character was found
 								if (characterIndex === -1) {
-									const error = new Error(`Unable to find a character with the id: ${characterId}`)
-									return new Promise((resolve, reject) => reject(error))
+									const error = new Error(`Unable to find a character with the id: ${characterId}`);
+									return new Promise((resolve, reject) => reject(error));
 								}
 
-								const oldCharacter = characters[characterIndex]
+								const oldCharacter = characters[characterIndex];
 								// If nothing has changed don't attempt to make changes.
 								if (
-									preExistingPhotos.filter(photo => photo.scheduledForRemoval).length === 0 &&
-									fileIds.length === 0 &&
-									oldCharacter.name === name &&
-									oldCharacter.story === story
-								)
-									return
+									preExistingPhotos.filter((photo) => photo.scheduledForRemoval).length === 0
+									&& fileIds.length === 0
+									&& oldCharacter.name === name
+									&& oldCharacter.story === story
+								) return null;
 
 								const updatedCharacters = replaceInArray(characters, characterIndex, () => ({
 									id: characterId,
 									files: newFiles,
 									name,
 									story,
-								}))
-								return firestore.collection('users').doc(uid).update({characters: updatedCharacters})
+								}));
+								return firestore.collection('users').doc(uid).update({characters: updatedCharacters});
 							},
 							onDone: 'scheduledRemoval',
 							onError: {
@@ -467,21 +477,18 @@ export const saveCharacterMachine = createMachine(
 					},
 					scheduledRemoval: {
 						invoke: {
-							src: ({uid, preExistingPhotos}) => {
-								return Promise.all(
-									preExistingPhotos
-										.filter(photo => photo.scheduledForRemoval)
-										.map(photo => {
-											return storage
-												.ref()
-												.child(`${uid}/${photo.id}`)
-												.delete()
-												.catch(error => {
-													console.warn(`Failed to delete pre-existing art ${uid}/${photo.id}:`, error)
-												})
-										}),
-								)
-							},
+							src: ({uid, preExistingPhotos}) => Promise.all(
+								preExistingPhotos
+									.filter((photo) => photo.scheduledForRemoval)
+									.map((photo) => storage
+										.ref()
+										.child(`${uid}/${photo.id}`)
+										.delete()
+										.catch((error) => {
+											// eslint-disable-next-line max-len
+											console.warn(`Failed to delete pre-existing art ${uid}/${photo.id}:`, error);
+										})),
+							),
 							onDone: '#save-character.finished.success',
 							onError: '#save-character.finished.error',
 						},
@@ -498,17 +505,32 @@ export const saveCharacterMachine = createMachine(
 	},
 	{
 		actions: {
-			getUploadInformation: assign(({mode}, {name, story, files, uid, preExistingPhotos, characters}) => {
-				if (mode === 'new') return {name, story, files, uid}
-				else if (mode === 'edit') return {name, story, preExistingPhotos, files, uid, characters}
+			getUploadInformation: assign(({mode}, {
+				// @ts-ignore
+				name, story, files, uid, preExistingPhotos, characters,
+			}) => {
+				if (mode === 'new') {
+					return {
+						name, story, files, uid,
+					};
+				}
+
+				if (mode === 'edit') {
+					return {
+						name, story, preExistingPhotos, files, uid, characters,
+					};
+				}
+
+				return {};
 			}),
 			createIdsForNewPhotos: assign({
 				fileIds: ({files}) => files.map(() => uuidv1()),
 			}),
 			setError: assign({
+				// @ts-ignore
 				error: (ctx, {data: error}) => {
-					console.warn(`An error occurred while saving your character:`, error)
-					return error
+					console.warn('An error occurred while saving your character:', error);
+					return error;
 				},
 			}),
 			cleanUpFileTransfers({fileIds, uid}) {
@@ -517,12 +539,12 @@ export const saveCharacterMachine = createMachine(
 						.ref()
 						.child(`${uid}/${fileId}`)
 						.delete()
-						.catch(error => console.warn(`Failed to delete new art ${uid}/${fileId}:`, error))
+						.catch((error) => console.warn(`Failed to delete new art ${uid}/${fileId}:`, error));
 				}
 			},
 		},
 		guards: {
-			isNewCharacter: ctx => ctx.mode === 'new',
+			isNewCharacter: (ctx) => ctx.mode === 'new',
 		},
 	},
-)
+);

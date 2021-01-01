@@ -1,4 +1,4 @@
-import {createTheme} from '@fluentui/react'
+import {createTheme} from '@fluentui/react';
 
 export const theme = createTheme({
 	palette: {
@@ -47,7 +47,7 @@ export const theme = createTheme({
 			fontWeight: 600,
 		},
 	},
-})
+});
 
 export const transitions = {
 	smooth: {
@@ -61,7 +61,7 @@ export const transitions = {
 		damping: 60,
 		mass: 1,
 	},
-}
+};
 
 export const colors = {
 	lightPink: 'hsl(353, 82%, 98%)',
@@ -75,13 +75,14 @@ export const colors = {
 	dark: 'hsl(0, 0%, 10%)',
 	notAsDark: 'hsl(0, 0%, 35%)',
 	light: 'hsl(0, 0%, 99%)',
+	notAsLight: 'hsl(0, 0%, 92%)',
 	lightShadow: 'hsla(0, 0%, 0%, 0.1)',
 	danger: 'hsl(0, 87%, 41%)',
 	dialogOverlay: 'rgba(88, 38, 14, 0.81)',
-}
+};
 
 for (const colorName in colors) {
-	const color = colors[colorName]
-	const variableName = colorName.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)
-	document.body.style.setProperty(`--${variableName}`, color)
+	const color = colors[colorName];
+	const variableName = colorName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+	document.body.style.setProperty(`--${variableName}`, color);
 }

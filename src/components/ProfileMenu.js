@@ -1,13 +1,12 @@
-import {useContext, useEffect, useRef} from 'react'
+import {useContext, useEffect, useRef} from 'react';
 
-import {Text} from '@fluentui/react'
-import {useMachine} from '@xstate/react'
-import {AnimatePresence, motion} from 'framer-motion'
+import {Text} from '@fluentui/react';
+import {AnimatePresence, motion} from 'framer-motion';
 
-import {colors, transitions} from '../shared/theme.js'
-import {PROFILE_SIZE, ProfilePhoto} from './ProfilePhoto.js'
-import {forEachNonDescendantTree} from '../shared/helpers.js'
-import {ProfileMenuContext, profileMenuMachine} from '../shared/machines.js'
+import {colors, transitions} from '../shared/theme.js';
+import {PROFILE_SIZE, ProfilePhoto} from './ProfilePhoto.js';
+import {forEachNonDescendantTree} from '../shared/helpers.js';
+import {ProfileMenuContext} from '../shared/machines.js';
 
 const profileMenuStyles = {
 	position: 'absolute',
@@ -19,7 +18,7 @@ const profileMenuStyles = {
 	borderRadius: '1.6rem',
 	zIndex: 2,
 	overflow: 'hidden',
-}
+};
 const backdropStyles = {
 	position: 'absolute',
 	left: 0,
@@ -28,7 +27,7 @@ const backdropStyles = {
 	height: '100vh',
 	background: 'white',
 	zIndex: 1,
-}
+};
 
 const profileMenuButtonStyles = {
 	position: 'relative',
@@ -44,21 +43,21 @@ const profileMenuButtonStyles = {
 	outline: 'none',
 	WebkitTapHighlightColor: 'rgba(0,0,0,0)',
 	zIndex: 2,
-}
+};
 const nameWrapperStyles = {
 	flexGrow: 1,
 	width: '100%',
 	position: 'absolute',
 	left: `calc(50% + ${PROFILE_SIZE}px / 2)`,
 	transform: 'translateX(-50%)',
-}
+};
 const nameStyles = {
 	fontWeight: 400,
 	letterSpacing: 1,
 	lineHeight: 1.2,
 	textAlign: 'center',
 	textTransform: 'capitalize',
-}
+};
 
 const listVariants = {
 	visible: {
@@ -75,17 +74,17 @@ const listVariants = {
 			duration: 0,
 		},
 	},
-}
+};
 const listStyles = {
 	display: 'flex',
 	flexDirection: 'column',
 	justifyContent: 'center',
 	overflow: 'hidden',
-}
+};
 const itemVariants = {
 	visible: {opacity: 1, y: 0},
 	hidden: {opacity: 0, y: 25, transition: {duration: 0}},
-}
+};
 const itemStyles = {
 	width: '100%',
 	padding: '10px 0',
@@ -95,9 +94,9 @@ const itemStyles = {
 	fontWeight: 600,
 	border: 'none',
 	cursor: 'pointer',
-}
-const itemHoverStyles = {scale: 1.05}
-const itemTapStyles = {scale: 0.95}
+};
+const itemHoverStyles = {scale: 1.05};
+const itemTapStyles = {scale: 0.95};
 
 export function ProfileMenuItem(props) {
 	return (
@@ -110,66 +109,70 @@ export function ProfileMenuItem(props) {
 			className="ProfileMenuItem"
 			{...props}
 		/>
-	)
+	);
 }
 
-export function ProfileMenu({email, name, menuName, children}) {
-	const [state, send, service] = useContext(ProfileMenuContext)
-	const backdropRef = useRef(null)
+export function ProfileMenu({
+	email, name, menuName, children,
+}) {
+	const [profileState, send, service] = useContext(ProfileMenuContext);
+	const backdropRef = useRef(null);
 
 	// handle TAP_AWAY, ESC, and inert
 	useEffect(() => {
 		function handleTapAway(event) {
-			if (backdropRef.current === event.target) send('TAP_AWAY')
+			if (backdropRef.current === event.target) send('TAP_AWAY');
 		}
 		function handleESC(event) {
-			if (event.key === 'Escape' || event.key === 'Esc') send('ESC')
+			if (event.key === 'Escape' || event.key === 'Esc') send('ESC');
 		}
 
-		const nonDescendantTrees = new Set()
+		const nonDescendantTrees = new Set();
 		function addListeners() {
-			window.addEventListener('click', handleTapAway)
-			window.addEventListener('keydown', handleESC)
-			forEachNonDescendantTree(document.getElementById('profile-menu'), element => {
-				nonDescendantTrees.add(element)
-				element.inert = true
-			})
+			window.addEventListener('click', handleTapAway);
+			window.addEventListener('keydown', handleESC);
+			forEachNonDescendantTree(document.getElementById('profile-menu'), (element) => {
+				nonDescendantTrees.add(element);
+				element.inert = true;
+			});
 		}
 		function removeListeners() {
-			window.removeEventListener('click', handleTapAway)
-			window.removeEventListener('keydown', handleESC)
-			for (const element of nonDescendantTrees) element.inert = false
+			window.removeEventListener('click', handleTapAway);
+			window.removeEventListener('keydown', handleESC);
+			for (const element of nonDescendantTrees) element.inert = false;
 		}
 
-		const subscription = service.subscribe(state => {
-			if (state.matches('open')) addListeners()
-			else removeListeners()
-		})
+		const subscription = service.subscribe((state) => {
+			if (state.matches('open')) addListeners();
+			else removeListeners();
+		});
 
 		return () => {
-			removeListeners()
-			subscription.unsubscribe()
-		}
-	}, [service, send])
+			removeListeners();
+			subscription.unsubscribe();
+		};
+	}, [service, send]);
 
-	let width
-	let height = PROFILE_SIZE
-	if (state.matches('closed')) width = PROFILE_SIZE
-	else if (state.matches('partiallyOpen')) width = PROFILE_SIZE * 3
-	else if (state.matches('open')) {
-		width = 249
-		height = 259
+	let width;
+	let height = PROFILE_SIZE;
+	if (profileState.matches('closed')) width = PROFILE_SIZE;
+	else if (profileState.matches('partiallyOpen')) width = PROFILE_SIZE * 3;
+	else if (profileState.matches('open')) {
+		width = 249;
+		height = 259;
 	}
 
-	let buttonLabel = 'Open profile menu'
-	if (state.matches('open')) buttonLabel = 'Close profile menu'
+	let buttonLabel = 'Open profile menu';
+	if (profileState.matches('open')) buttonLabel = 'Close profile menu';
 
 	// TODO: Add focus style to profile menu close button (while profile menu is open)
 	return (
 		<div id="profile-menu">
+			{/* @ts-ignore */}
 			<motion.div style={profileMenuStyles} animate={{height}} transition={transitions.menu}>
 				{/* Button to open menu */}
 				<motion.button
+					/* @ts-ignore */
 					style={profileMenuButtonStyles}
 					animate={{width}}
 					onHoverStart={() => send('HOVER_START')}
@@ -182,12 +185,16 @@ export function ProfileMenu({email, name, menuName, children}) {
 					title={buttonLabel}
 				>
 					<motion.span
-						animate={{opacity: state.matches('partiallyOpen') || state.matches('open') ? 1 : 0}}
+						animate={{
+							opacity: profileState.matches('partiallyOpen') || profileState.matches('open') ? 1 : 0,
+						}}
+						/* @ts-ignore */
 						style={nameWrapperStyles}
 						transition={{type: 'spring', mass: 0.2}}
 					>
+						{/* @ts-ignore */}
 						<Text variant="mediumTitle" style={nameStyles}>
-							{state.matches('open') ? `${menuName} Menu` : name}
+							{profileState.matches('open') ? `${menuName} Menu` : name}
 						</Text>
 					</motion.span>
 					<ProfilePhoto email={email} />
@@ -195,8 +202,15 @@ export function ProfileMenu({email, name, menuName, children}) {
 
 				{/* Render menu buttons passed as children */}
 				<AnimatePresence>
-					{state.matches('open') && (
-						<motion.div initial="hidden" animate="visible" exit="hidden" variants={listVariants} style={listStyles}>
+					{profileState.matches('open') && (
+						<motion.div
+							initial="hidden"
+							animate="visible"
+							exit="hidden"
+							variants={listVariants}
+							/* @ts-ignore */
+							style={listStyles}
+						>
 							{children}
 						</motion.div>
 					)}
@@ -205,16 +219,17 @@ export function ProfileMenu({email, name, menuName, children}) {
 
 			{/* Fade in backdrop */}
 			<AnimatePresence>
-				{(state.matches('open') || state.matches('partiallyOpen')) && (
+				{(profileState.matches('open') || profileState.matches('partiallyOpen')) && (
 					<motion.div
 						ref={backdropRef}
 						initial={{opacity: 0}}
 						animate={{opacity: 0.81}}
 						exit={{opacity: 0}}
+						/* @ts-ignore */
 						style={backdropStyles}
 					/>
 				)}
 			</AnimatePresence>
 		</div>
-	)
+	);
 }

@@ -1,41 +1,43 @@
-import {auth, useUser} from '../shared/firebase'
-import {useContext} from 'react'
-import {ProfileMenuContext} from '../shared/machines'
-import {useHistory} from 'react-router-dom'
-import {ProfileMenu, ProfileMenuItem} from './ProfileMenu'
-import {colors} from '../shared/theme'
-import {Text} from '@fluentui/react'
-import {useScrollStatus} from '../shared/helpers'
+import {useContext} from 'react';
+import {useHistory} from 'react-router-dom';
+
+import {Text} from '@fluentui/react';
+
+import {auth, useUser} from '../shared/firebase.js';
+import {ProfileMenuContext} from '../shared/machines.js';
+import {ProfileMenu, ProfileMenuItem} from './ProfileMenu.js';
+import {colors} from '../shared/theme.js';
+import {useScrollStatus} from '../shared/helpers.js';
 
 /**
  * Renders the Home page's header with the profile image. It handles scroll animations.
+ * @param {{changeMode(value: 'view-characters' | 'share-characters'): void}} props
  * @returns {JSX.Element}
- * @constructor
  */
 export function ProfileHeader({changeMode}) {
-	const user = useUser()
-	const scrollStatus = useScrollStatus()
-	const [current, send] = useContext(ProfileMenuContext)
-	const history = useHistory()
+	const user = useUser();
+	const scrollStatus = useScrollStatus();
+	const [current, send] = useContext(ProfileMenuContext);
+	const history = useHistory();
 
 	function signOut() {
 		auth.signOut().then(() => {
-			history.push('/login')
-		})
+			history.push('/login');
+		});
 	}
 
-	let menuName
-	let menuItems
+	let menuName;
+	let menuItems;
 	if (current.matches('open.share')) {
-		menuName = 'Share'
+		menuName = 'Share';
 		menuItems = (
 			<>
 				<ProfileMenuItem key="view-shared">View Shared</ProfileMenuItem>
 				<ProfileMenuItem
 					key="share"
 					onClick={() => {
-						changeMode('share-characters')
-						send('SHARE_CHARACTER')
+						changeMode('share-characters');
+						send('SHARE_CHARACTER');
 					}}
 				>
 					Share Character
@@ -45,9 +47,9 @@ export function ProfileHeader({changeMode}) {
 					Back
 				</ProfileMenuItem>
 			</>
-		)
+		);
 	} else {
-		menuName = 'Profile'
+		menuName = 'Profile';
 		menuItems = (
 			<>
 				<ProfileMenuItem key="share-menu" onClick={() => send('OPEN_SHARE_MENU')}>
@@ -59,7 +61,7 @@ export function ProfileHeader({changeMode}) {
 					Sign Out
 				</ProfileMenuItem>
 			</>
-		)
+		);
 	}
 
 	return (
@@ -75,6 +77,7 @@ export function ProfileHeader({changeMode}) {
 				transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
 			}}
 		>
+			{/* @ts-ignore */}
 			<Text variant="title" as="h1" style={{margin: 0}}>
 				<span aria-hidden="true">💛</span> Art Hub
 			</Text>
@@ -82,5 +85,5 @@ export function ProfileHeader({changeMode}) {
 				{menuItems}
 			</ProfileMenu>
 		</header>
-	)
+	);
 }

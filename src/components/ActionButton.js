@@ -1,21 +1,45 @@
-import {FontIcon, Text} from '@fluentui/react'
-import '../styles/ActionButton.css'
+/* eslint-disable react/button-has-type */
+import {FontIcon, Text} from '@fluentui/react';
+import PropTypes from 'prop-types';
+import '../styles/ActionButton.css';
 
-/*
- * @param {{ variant: 'round' | 'flat' | 'bold-orange' | 'bold-pink' | 'danger', iconName: string }} options
+/**
+ * @param {{
+ * 	type?: 'button' | 'submit' | 'reset',
+ * 	variant: string,
+ * 	iconName?: string,
+ * 	[s: string]: any,
+ * }} props
  */
-export function ActionButton({variant, iconName, children, className, ...props}) {
+export function ActionButton({
+	type = 'button', variant, iconName, children, className, ...props
+}) {
 	return (
 		<button
-			className={`ActionButton ActionButton--${variant} ${children ? 'ActionButton--content' : ''} ${className || ''}`}
+			type={type}
+			className={
+				`ActionButton ActionButton--${variant} ${children ? 'ActionButton--content' : ''} ${className || ''}`
+			}
 			{...props}
 		>
 			<FontIcon iconName={iconName} aria-hidden="true" />
 			{children && (
+				// @ts-ignore
 				<Text as="span" variant="actionButton">
 					{children}
 				</Text>
 			)}
 		</button>
-	)
+	);
 }
+
+ActionButton.propTypes = {
+	type: PropTypes.oneOf(['button', 'submit', 'reset']),
+	variant: PropTypes.oneOf(['round', 'flat', 'bold-orange', 'bold-pink', 'danger']).isRequired,
+	iconName: PropTypes.string,
+};
+
+ActionButton.defaultProps = {
+	type: 'button',
+	iconName: null,
+};

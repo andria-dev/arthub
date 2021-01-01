@@ -1,0 +1,28 @@
+.InputFrame {
+}
+
+.InputFrame__label-wrapper {
+}
+
+.InputFrame__label {
+	color: var(--dark);
+}
+
+.InputFrame__input {
+	padding: 12px;
+
+	color: var(--dark);
+	background-color: var(--not-as-light);
+	font-size: 15px;
+
+	border: none;
+	border-radius: 10px;
+}
+
+.InputFrame__input:focus {
+	color: var(--orange);
+}
+
+.InputFrame__input::placeholder {
+	color: var(--not-as-dark);
+}

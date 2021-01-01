@@ -1,5 +1,5 @@
-import {Stack} from '@fluentui/react'
-import {emptyObject} from '../shared/empty'
+import {Stack} from '@fluentui/react';
+import {emptyObject} from '../shared/empty.js';
 
 export function Center({style = emptyObject, ...props}) {
 	return (
@@ -9,5 +9,5 @@ export function Center({style = emptyObject, ...props}) {
 			style={{height: '100%', width: '100%', ...style}}
 			{...props}
 		/>
-	)
+	);
 }
