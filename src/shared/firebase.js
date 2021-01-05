@@ -8,10 +8,10 @@ import 'firebase/firestore';
 import 'firebase/storage';
 
 import {
-	createDocumentResource,
+	createQueryResource,
 	createResource,
 	createResourceFromSubscription,
-	useDocumentResource,
+	useQueryResource,
 } from './resources.js';
 
 export const config = {
@@ -29,33 +29,38 @@ firebase.initializeApp(config);
 export default firebase;
 
 export const firestore = firebase.firestore();
+window.firestore = firestore;
 firestore.settings({timestampsInSnapshots: true});
 firestore.enablePersistence().catch((error) => console.warn(error));
 
 export const storage = firebase.storage();
 export const auth = firebase.auth();
+window.auth = auth;
 export const provider = new firebase.auth.GoogleAuthProvider();
-
-/**
- * @typedef {{
- *   id: string,
- *   files: [string],
- *   name: string,
- *   story: string
- * }} Character
- */
 
 /**
  * @typedef {Object} FirebaseData
  * @property {firebase.User | null} user
- * @property {Array<Character>} characters
+ * @property {import('./prop-types.js').Character[]} characters
  */
 
 /** @type {React.Context<FirebaseData>} */
 const FirebaseContext = createContext({user: null, characters: []});
 
-function FirebaseCharactersResource({user, resource, children}) {
-	const {characters} = useDocumentResource(firestore.collection('users').doc(user?.uid), resource);
+/**
+ * @param {{
+ * 	user: import('firebase').User,
+ * 	resource: import('./resources.js').ResourceReader<import('./prop-types.js').Character[]>,
+ * 	children: any,
+ * }} props
+ */
+function FirebaseCharactersResource({
+	user, resource, children,
+}) {
+	/** @type {import('firebase').firestore.Query<import('./prop-types.js').Character>}
+	 * @ts-ignore */
+	const query = firestore.collection('characters').where('roles.owner', '==', user.uid);
+	const characters = useQueryResource(query, resource);
 	const value = useMemo(() => ({user, characters}), [user, characters]);
 	return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;
 }
@@ -72,8 +77,14 @@ function FirebaseUserResource({resource, children}) {
 		else setUser(newUser);
 	}), []);
 
-	const userDocumentResource = useMemo(() => {
-		if (user?.uid) return createDocumentResource(firestore.collection('users').doc(user.uid));
+	/** @type {import('./resources.js').ResourceReader<import('./prop-types.js').Character[]>}
+	 * @ts-ignore */
+	const charactersQueryResource = useMemo(() => {
+		if (user?.uid) {
+			return createQueryResource(
+				firestore.collection('characters').where('roles.owner', '==', user.uid),
+			);
+		}
 		return null;
 	}, [user?.uid]);
 
@@ -82,7 +93,7 @@ function FirebaseUserResource({resource, children}) {
 	}
 
 	return (
-		<FirebaseCharactersResource user={user} resource={userDocumentResource}>
+		<FirebaseCharactersResource user={user} resource={charactersQueryResource}>
 			{children}
 		</FirebaseCharactersResource>
 	);
@@ -91,7 +102,6 @@ function FirebaseUserResource({resource, children}) {
 /**
  * Provides access to active Firebase values.
  * @returns {JSX.Element}
- * @constructor
  */
 export function FirebaseProvider({children}) {
 	const resource = createResourceFromSubscription(auth.onAuthStateChanged.bind(auth));
@@ -105,7 +115,7 @@ export function useUser() {
 }
 
 /**
- * @returns {Array<Character>}
+ * @returns {Array<import('./prop-types.js').Character>}
  */
 export function useCharacters() {
 	const state = useContext(FirebaseContext);
@@ -138,7 +148,7 @@ export async function fetchImageURL(userId, fileId) {
  * After that, each image is fetched and a resource is created for each fetch
  * @param {string} id The character's Id.
  * @returns {{
- * 	character: Character,
+ * 	character: import('./prop-types.js').Character,
  * 	imageResources: Array<import('./resources.js').ResourceReader<string>>
  * }}
  */

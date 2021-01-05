@@ -1,0 +1,30 @@
+.Input__frame {
+	display: flex;
+	flex-direction: column;
+}
+
+.Input__label {
+	margin: 0 auto 4px 8px;
+	color: var(--dark);
+}
+
+.Input__field {
+	width: calc(100% - 24px);
+	padding: 12px;
+
+	color: var(--dark);
+	background-color: var(--not-as-light);
+	font-size: 18px;
+
+	border: solid 1px transparent;
+	border-radius: 10px;
+}
+
+.Input__field:focus {
+	outline: none;
+	border-color: var(--orange);
+}
+
+.Input__field::placeholder {
+	color: var(--not-as-dark);
+}

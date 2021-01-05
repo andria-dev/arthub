@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useContext} from 'react';
 
 import {Link as RouterLink} from 'react-router-dom';
 import {Text} from '@fluentui/react';
@@ -6,42 +6,37 @@ import {Text} from '@fluentui/react';
 import {useCharacters} from '../shared/firebase.js';
 import {CharacterCard} from './CharacterCard.js';
 import {colors} from '../shared/theme.js';
-import {ShareDialog} from './ShareDialog.js';
-
-function CharacterCardWrapper({character, mode}) {
-	const [status, setStatus] = useState('idle');
-
-	return (
-		<>
-			<CharacterCard key={character.id} character={character} mode={mode}>
-				{mode === 'view-characters' && (
-					<RouterLink to={`/character/${character.id}`} className="CharacterCard__action-button">
-						View Character
-					</RouterLink>
-				)}
-				{mode === 'share-characters' && (
-					<button type="button" className="CharacterCard__action-button" onClick={() => setStatus('sharing')}>
-						Share Character
-					</button>
-				)}
-			</CharacterCard>
-			<ShareDialog isOpen={status === 'sharing'} onDismiss={() => setStatus('idle')} character={character} />
-		</>
-	);
-}
+import {ShareContext} from '../shared/machines.js';
 
 /**
- * Renders a list of `<CharacterCard>`'s from a document and a resource.
- * @param {{mode: 'view-characters' | 'share-characters'}} props
+ * Renders a list of `<CharacterCard>`s.
  */
-export function CharacterCardList({mode}) {
+export function CharacterCardList() {
 	const characters = useCharacters();
+	const [current, send] = useContext(ShareContext);
 
 	// Render all the Character Cards if there are any.
 	if (characters.length > 0) {
 		return (
 			<>
-				{characters.map((character) => <CharacterCardWrapper character={character} mode={mode} />)}
+				{characters.map((character) => (
+					<CharacterCard key={character.id} character={character}>
+						{current.matches('viewCharacters') && (
+							<RouterLink to={`/character/${character.id}`} className="CharacterCard__action-button">
+								View Character
+							</RouterLink>
+						)}
+						{current.matches('shareCharacters') && (
+							<button
+								type="button"
+								className="CharacterCard__action-button"
+								onClick={() => send('SHARING_CHARACTER', {characterId: character.id})}
+							>
+								Share Character
+							</button>
+						)}
+					</CharacterCard>
+				))}
 			</>
 		);
 	}

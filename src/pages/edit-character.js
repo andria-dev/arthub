@@ -9,7 +9,7 @@ import {
 	clearStorageKeys,
 } from '../components/character-parts.js';
 import {useCharacters, useCharacterWithImages, useUser} from '../shared/firebase.js';
-import {ActionButton} from '../components/ActionButton.js';
+import {ActionButton} from '../components/ActionButton/ActionButton.js';
 import {useSlideshow} from '../components/slideshow-parts.js';
 import {saveCharacterMachine} from '../shared/machines.js';
 import {SaveDialog} from '../components/SaveDialog.js';

@@ -31,7 +31,6 @@ initializeIcons();
 /**
  * A route that will only render when logged in. Redirects to "/login" when logged out.
  * @returns {JSX.Element}
- * @constructor
  */
 function PrivateRoute({as, ...props}) {
 	const user = useUser();
@@ -47,7 +46,6 @@ function PrivateRoute({as, ...props}) {
 /**
  * A route for when you're not logged in. Redirects to the home page when logged in.
  * @returns {JSX.Element}
- * @constructor
  */
 function UnauthenticatedRoute({as, ...props}) {
 	const user = useUser();

@@ -2,7 +2,7 @@ import {useEffect} from 'react';
 import {useMachine} from '@xstate/react';
 import {useHistory} from 'react-router-dom';
 
-import {ActionButton} from '../components/ActionButton.js';
+import {ActionButton} from '../components/ActionButton/ActionButton.js';
 import {SaveDialog} from '../components/SaveDialog.js';
 import {useUser} from '../shared/firebase.js';
 import {saveCharacterMachine} from '../shared/machines.js';
@@ -54,6 +54,7 @@ export function NewCharacter() {
 			slideshow={(
 				<div style={{display: 'flex', flexDirection: 'column', marginBottom: 40}}>
 					{slideshowSection}
+					{/* @ts-ignore */}
 					<input id={dropId} {...getInputProps()} />
 					{dropMessage}
 				</div>

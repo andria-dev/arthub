@@ -3,13 +3,17 @@ import {createContext} from 'react';
 import {assign, createMachine} from 'xstate';
 import gravatar from 'gravatar';
 import {v1 as uuidv1} from 'uuid';
-import * as firebase from 'firebase';
 
 import {corsAnywhere, firestore, storage} from './firebase.js';
 import {MissingGravatarProfileError, UnreachableGravatarPhotoError, UnreachableGravatarProfileError} from './errors.js';
 import {removeFromArray, replaceInArray} from './helpers.js';
 
-/** @type {import('xstate').StateMachine<{currentPage: number, files: Array, preExistingPhotos: Array}>} @ts-ignore */
+/**
+ * @type {import('xstate').StateMachine<
+ * 	{currentPage: number, files: any[], preExistingPhotos: any[]},
+ * 	import('xstate').DoneInvokeEvent
+ * >}
+ * */
 export const uploadSlideshowMachine = createMachine(
 	{
 		id: 'upload-slideshow',
@@ -136,14 +140,18 @@ export const uploadSlideshowMachine = createMachine(
 			decrementPage: assign({currentPage: (ctx) => ctx.currentPage - 1}),
 			decrementPageOrZero: assign({currentPage: (ctx) => Math.max(ctx.currentPage - 1, 0)}),
 			incrementPage: assign({currentPage: (ctx) => ctx.currentPage + 1}),
-			goToFirstPage: assign({currentPage: 0}),
+			goToFirstPage: assign({
+				currentPage(ctx) {
+					if (ctx) return 0; // stupid workaround for TS checker to be happy (ctx required)
+					return 0;
+				},
+			}),
 			goToLastPageOfPreExistingPhotos: assign({currentPage: (ctx) => ctx.preExistingPhotos.length - 1}),
 			goToLastPageOfNewPhotos: assign({currentPage: (ctx) => ctx.files.length - 1}),
 			removeNewPhoto: assign({
 				files: ({files, currentPage}) => removeFromArray(files, currentPage),
 			}),
 			addNewPhotos: assign({
-				// @ts-ignore
 				files: (ctx, event) => ctx.files.concat(event.data),
 			}),
 			scheduleForRemoval: assign({
@@ -273,6 +281,122 @@ export const profileMenuMachine = createMachine({
 	},
 });
 
+export const ShareContext = createContext([]);
+/**
+ * @type {import('xstate').StateMachine<
+ * 	{characterId: string, url: string, alias: string, userId: string},
+ * 	import('xstate').EventObject & ({characterId: string} | {url: string}),
+ * >}
+ */
+export const shareMachine = createMachine({
+	id: 'share',
+	initial: 'viewCharacters',
+	context: {
+		characterId: '', url: '', alias: '', userId: '',
+	},
+	states: {
+		viewCharacters: {
+			on: {
+				SHARE_CHARACTER: 'shareCharacters',
+			},
+		},
+		shareCharacters: {
+			initial: 'idle',
+			states: {
+				idle: {
+					on: {
+						SHARING_CHARACTER: {
+							target: 'confirming',
+							actions: ['setCharacterId'],
+						},
+						CANCEL: '#share.viewCharacters',
+					},
+				},
+				confirming: {
+					on: {
+						CONFIRMED: {
+							target: 'sharing',
+							actions: ['setAlias'],
+						},
+						DISMISS: 'idle',
+					},
+				},
+				sharing: {
+					invoke: {
+						src: async (context) => {
+							const shareReference = firestore.collection('shares').doc();
+							await shareReference.set({
+								alias: context.alias,
+								roles: {owner: context.userId},
+								characterId: context.characterId,
+							});
+							return `${window.location.origin}/shared-character/${shareReference.id}`;
+						},
+						onDone: {
+							target: 'showUrl',
+							actions: ['setUrl'],
+						},
+						onError: 'failure',
+					},
+				},
+				showUrl: {
+					exit: ['clearCharacterInfo'],
+					on: {
+						DISMISS: 'idle',
+						VIEW_LINKS: '#share.viewLinks',
+					},
+					initial: 'idle',
+					states: {
+						idle: {
+							on: {
+								COPY: 'copying',
+							},
+						},
+						copying: {
+							invoke: {
+								src: (context) => navigator.clipboard.writeText(context.url),
+								onDone: 'copied',
+								onError: 'notCopied',
+							},
+						},
+						copied: {
+							on: {
+								COPY: 'copying',
+							},
+						},
+						notCopied: {
+							on: {
+								COPY: 'copying',
+							},
+						},
+					},
+				},
+				failure: {
+					on: {
+						DISMISSED: 'idle',
+					},
+				},
+			},
+		},
+		viewLinks: {},
+	},
+}, {
+	actions: {
+		setCharacterId: assign({
+			characterId: (ctx, event) => event.characterId,
+		}),
+		setAlias: assign({
+			alias: (ctx, event) => event.alias,
+		}),
+		setUrl: assign({
+			url: (ctx, event) => event.data,
+		}),
+		clearCharacterInfo: assign((ctx) => ({
+			...ctx, characterId: '', url: '', alias: '',
+		})),
+	},
+});
+
 const gravatarCache = new Map();
 async function fetchGravatarThumbnail(email) {
 	if (gravatarCache.has(email)) return gravatarCache.get(email);
@@ -366,7 +490,6 @@ export const saveCharacterMachine = createMachine(
 			files: [],
 			preExistingPhotos: [],
 			uid: '',
-			characters: [],
 		},
 		states: {
 			idle: {
@@ -415,15 +538,10 @@ export const saveCharacterMachine = createMachine(
 							src: ({
 								characterId, fileIds, name, story, uid,
 							}) => firestore
-								.collection('users')
-								.doc(uid)
-								.update({
-									characters: firebase.firestore.FieldValue.arrayUnion({
-										id: characterId,
-										files: fileIds,
-										name,
-										story,
-									}),
+								.collection('characters')
+								.doc(characterId)
+								.set({
+									files: fileIds, name, story, roles: {owner: uid},
 								}),
 							onDone: '#save-character.finished.success',
 							onError: {
@@ -435,38 +553,17 @@ export const saveCharacterMachine = createMachine(
 					edits: {
 						invoke: {
 							src: ({
-								characters, characterId, preExistingPhotos, fileIds, name, story, uid,
+								characterId, preExistingPhotos, fileIds, name, story,
 							}) => {
 								const newFiles = preExistingPhotos
 									.filter((photo) => !photo.scheduledForRemoval)
 									.map((photo) => photo.id)
 									.concat(fileIds);
-								const characterIndex = characters.findIndex(
-									(character) => character.id === characterId,
-								);
 
-								// No character was found
-								if (characterIndex === -1) {
-									const error = new Error(`Unable to find a character with the id: ${characterId}`);
-									return new Promise((resolve, reject) => reject(error));
-								}
-
-								const oldCharacter = characters[characterIndex];
-								// If nothing has changed don't attempt to make changes.
-								if (
-									preExistingPhotos.filter((photo) => photo.scheduledForRemoval).length === 0
-									&& fileIds.length === 0
-									&& oldCharacter.name === name
-									&& oldCharacter.story === story
-								) return null;
-
-								const updatedCharacters = replaceInArray(characters, characterIndex, () => ({
-									id: characterId,
-									files: newFiles,
-									name,
-									story,
-								}));
-								return firestore.collection('users').doc(uid).update({characters: updatedCharacters});
+								return firestore
+									.collection('characters')
+									.doc(characterId)
+									.update({files: newFiles, name, story});
 							},
 							onDone: 'scheduledRemoval',
 							onError: {

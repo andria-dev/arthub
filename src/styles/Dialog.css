@@ -31,5 +31,39 @@
 }
 
 .Dialog__title {
-	margin: 0px 0px 20px;
+	margin: 0px 0px 12px;
+}
+
+.Dialog__action-bar {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 20px;
+}
+
+.Dialog__action {
+	min-width: 126px;
+	height: 45px;
+
+	font-size: 18px;
+
+	border-radius: 10px;
+	border: none;
+	cursor: pointer;
+}
+
+.Dialog__action--primary {
+	color: var(--light);
+	background-color: var(--real-orange);
+	/* TODO: box-shadow: IDK? */
+}
+
+.Dialog__action--secondary {
+	color: var(--real-orange);
+	background-color: transparent;
+}
+
+.Dialog__action--tertiary {
+	color: var(--real-pink);
+	background-color: transparent;
+	border: solid 2px var(--real-pink);
 }

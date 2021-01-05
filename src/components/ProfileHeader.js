@@ -11,10 +11,9 @@ import {useScrollStatus} from '../shared/helpers.js';
 
 /**
  * Renders the Home page's header with the profile image. It handles scroll animations.
- * @param {{changeMode(value: 'view-characters' | 'share-characters'): void}} props
  * @returns {JSX.Element}
  */
-export function ProfileHeader({changeMode}) {
+export function ProfileHeader() {
 	const user = useUser();
 	const scrollStatus = useScrollStatus();
 	const [current, send] = useContext(ProfileMenuContext);
@@ -35,10 +34,7 @@ export function ProfileHeader({changeMode}) {
 				<ProfileMenuItem key="view-shared">View Shared</ProfileMenuItem>
 				<ProfileMenuItem
 					key="share"
-					onClick={() => {
-						changeMode('share-characters');
-						send('SHARE_CHARACTER');
-					}}
+					onClick={() => send('SHARE_CHARACTER')}
 				>
 					Share Character
 				</ProfileMenuItem>

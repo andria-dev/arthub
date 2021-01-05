@@ -8,6 +8,7 @@ import {PROFILE_SIZE, ProfilePhoto} from './ProfilePhoto.js';
 import {forEachNonDescendantTree} from '../shared/helpers.js';
 import {ProfileMenuContext} from '../shared/machines.js';
 
+/** @type {import('framer-motion').MotionStyle} */
 const profileMenuStyles = {
 	position: 'absolute',
 	top: '27px',
@@ -19,6 +20,8 @@ const profileMenuStyles = {
 	zIndex: 2,
 	overflow: 'hidden',
 };
+
+/** @type {import('framer-motion').MotionStyle} */
 const backdropStyles = {
 	position: 'absolute',
 	left: 0,
@@ -29,6 +32,7 @@ const backdropStyles = {
 	zIndex: 1,
 };
 
+/** @type {import('framer-motion').MotionStyle} */
 const profileMenuButtonStyles = {
 	position: 'relative',
 	display: 'flex',
@@ -44,6 +48,8 @@ const profileMenuButtonStyles = {
 	WebkitTapHighlightColor: 'rgba(0,0,0,0)',
 	zIndex: 2,
 };
+
+/** @type {import('framer-motion').MotionStyle} */
 const nameWrapperStyles = {
 	flexGrow: 1,
 	width: '100%',
@@ -51,9 +57,11 @@ const nameWrapperStyles = {
 	left: `calc(50% + ${PROFILE_SIZE}px / 2)`,
 	transform: 'translateX(-50%)',
 };
+
+/** @type {import('csstype').Properties} */
 const nameStyles = {
 	fontWeight: 400,
-	letterSpacing: 1,
+	letterSpacing: '1px',
 	lineHeight: 1.2,
 	textAlign: 'center',
 	textTransform: 'capitalize',
@@ -75,16 +83,19 @@ const listVariants = {
 		},
 	},
 };
+/** @type {React.CSSProperties} */
 const listStyles = {
 	display: 'flex',
 	flexDirection: 'column',
 	justifyContent: 'center',
 	overflow: 'hidden',
 };
+
 const itemVariants = {
 	visible: {opacity: 1, y: 0},
 	hidden: {opacity: 0, y: 25, transition: {duration: 0}},
 };
+/** @type {React.CSSProperties} */
 const itemStyles = {
 	width: '100%',
 	padding: '10px 0',
@@ -95,6 +106,7 @@ const itemStyles = {
 	border: 'none',
 	cursor: 'pointer',
 };
+
 const itemHoverStyles = {scale: 1.05};
 const itemTapStyles = {scale: 0.95};
 
@@ -168,11 +180,9 @@ export function ProfileMenu({
 	// TODO: Add focus style to profile menu close button (while profile menu is open)
 	return (
 		<div id="profile-menu">
-			{/* @ts-ignore */}
 			<motion.div style={profileMenuStyles} animate={{height}} transition={transitions.menu}>
 				{/* Button to open menu */}
 				<motion.button
-					/* @ts-ignore */
 					style={profileMenuButtonStyles}
 					animate={{width}}
 					onHoverStart={() => send('HOVER_START')}
@@ -188,11 +198,9 @@ export function ProfileMenu({
 						animate={{
 							opacity: profileState.matches('partiallyOpen') || profileState.matches('open') ? 1 : 0,
 						}}
-						/* @ts-ignore */
 						style={nameWrapperStyles}
 						transition={{type: 'spring', mass: 0.2}}
 					>
-						{/* @ts-ignore */}
 						<Text variant="mediumTitle" style={nameStyles}>
 							{profileState.matches('open') ? `${menuName} Menu` : name}
 						</Text>
@@ -225,7 +233,6 @@ export function ProfileMenu({
 						initial={{opacity: 0}}
 						animate={{opacity: 0.81}}
 						exit={{opacity: 0}}
-						/* @ts-ignore */
 						style={backdropStyles}
 					/>
 				)}

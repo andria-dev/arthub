@@ -26,10 +26,14 @@ export const theme = createTheme({
 		white: '#ffffff',
 	},
 	fonts: {
+		// @ts-ignore
 		actionButton: {
 			fontSize: 16,
 			fontFamily: 'Inter',
 			fontWeight: 600,
+		},
+		medium: {
+			fontSize: 20,
 		},
 		mediumTitle: {
 			fontSize: 20,

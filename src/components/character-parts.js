@@ -179,7 +179,7 @@ export function CharacterInput({
 const debouncedSetItem = debounce((key, value) => localStorage.setItem(key, value), 100);
 export function createValueStorer(key) {
 	return (event) => {
-		debouncedSetItem(key, event instanceof Event ? event.target.value : event);
+		debouncedSetItem(key, event?.nativeEvent instanceof Event ? event.target.value : event);
 	};
 }
 export function clearStorageKeys(...keys) {

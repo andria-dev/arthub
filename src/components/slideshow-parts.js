@@ -5,7 +5,7 @@ import {useId} from '@reach/auto-id';
 
 import {uploadSlideshowMachine} from '../shared/machines.js';
 import {colors} from '../shared/theme.js';
-import {ActionButton} from './ActionButton.js';
+import {ActionButton} from './ActionButton/ActionButton.js';
 import {emptyArray} from '../shared/empty.js';
 import {Center} from './Center.js';
 
@@ -96,9 +96,8 @@ export const dropZoneMessages = {
 
 /**
  * Handles Suspense part of rendering a pre-existing photo for the character editor
- * @param {import('../shared/resources').ResourceReader<string>} resource
+ * @param {{resource: import('../shared/resources').ResourceReader<string>}} props
  * @returns {JSX.Element}
- * @constructor
  */
 function PreExistingPhoto({resource}) {
 	return <img src={resource.read()} alt="" style={artworkStyles} />;
@@ -115,6 +114,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 	const [state, send] = useMachine(
 		uploadSlideshowMachine.withContext({
 			...uploadSlideshowMachine.context,
+			// @ts-ignore
 			preExistingPhotos,
 		}),
 	);
@@ -123,6 +123,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 		onDropAccepted(acceptedFiles) {
 			// handle cancelled file operations
 			const filesWithPreview = acceptedFiles.map((file) => {
+				// @ts-ignore
 				file.preview = URL.createObjectURL(file);
 				return file;
 			});
@@ -145,6 +146,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 					padding: '45px 31px 0',
 				}}
 			>
+				{/* @ts-ignore */}
 				<img
 					src="/artist-and-art.svg"
 					alt="Artist looking at her art"
@@ -169,6 +171,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 		slideshowSection = (
 			<div style={artworkWrapperStyles}>
 				{state.context.currentPage > 0 || state.context.preExistingPhotos.length > 0 ? previousButton : null}
+				{/* @ts-ignore */}
 				<img src={state.context.files[state.context.currentPage].preview} alt="" style={artworkStyles} />
 				<ActionButton
 					iconName="Delete"
@@ -231,6 +234,7 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 	/* TODO: align center on Desktop sizes */
 	if (state.matches('photos')) {
 		dropMessage = (
+			// @ts-ignore
 			<Text variant="higherTitle" style={{textAlign: 'right', padding: '0 31px', marginTop: 10}}>
 				Edit your character photos above.
 			</Text>
@@ -238,8 +242,10 @@ export function useSlideshow(preExistingPhotos = emptyArray) {
 	} else {
 		dropMessage = (
 			<Text
+				// @ts-ignore
 				as="label"
 				htmlFor={dropId}
+				// @ts-ignore
 				variant="higherTitle"
 				style={{textAlign: 'right', padding: '0 31px', marginTop: 10}}
 			>

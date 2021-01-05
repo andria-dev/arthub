@@ -1,11 +1,11 @@
-import {Suspense, useMemo} from 'react';
+import {Suspense, useContext, useMemo} from 'react';
 
-import {motion} from 'framer-motion';
 import {createResource} from '../shared/resources.js';
 import {fetchImageURL, useUser} from '../shared/firebase.js';
 import {Loading} from './Loading.js';
 
 import '../styles/CharacterCard.css';
+import {ShareContext} from '../shared/machines.js';
 
 /**
  * @param {{resource: import('../shared/resources.js').ResourceReader<string>, alt: string}} props
@@ -17,7 +17,7 @@ function CharacterCardArt({resource, alt}) {
 
 /**
  *
- * @param {import('../shared/firebase.js').Character} character
+ * @param {import('../shared/prop-types.js').Character} character
  * @returns {import('../shared/resources.js').ResourceReader<string>}
  */
 function useFirstImageResourceCreator(character) {
@@ -31,22 +31,23 @@ function useFirstImageResourceCreator(character) {
 /**
  *
  * @param {{
- * 	mode: 'view-characters' | 'share-characters',
- * 	character: import('../shared/firebase.js').Character,
+ * 	character: import('../shared/prop-types.js').Character,
  * 	children: any
  * }} props
  */
-export function CharacterCard({mode, character, children}) {
+export function CharacterCard({character, children}) {
 	const imageResource = useFirstImageResourceCreator(character);
+	const [current] = useContext(ShareContext);
+
+	let className = 'CharacterCard';
+	if (current.matches('shareCharacters')) className += ' CharacterCard--share-characters';
 
 	return (
-		<figure className={`CharacterCard CharacterCard--${mode}`}>
+		<figure className={className}>
 			{/* TODO: replace alt with alt from data */}
 			{imageResource ? (
 				<Suspense fallback={<Loading />}>
-					<motion.div layoutId={`character-art-${character.id}`}>
-						<CharacterCardArt resource={imageResource} alt="" />
-					</motion.div>
+					<CharacterCardArt resource={imageResource} alt="" />
 				</Suspense>
 			) : (
 				<span className="CharacterCard__letter">{character.name[0]}</span>

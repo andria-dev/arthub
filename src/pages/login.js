@@ -3,7 +3,7 @@ import {useState} from 'react';
 import {motion} from 'framer-motion';
 import {Link as RouterLink} from 'react-router-dom';
 import {
-	DefaultButton, Link, MessageBar, MessageBarType, PrimaryButton, Stack, Text, TextField,
+	Link, MessageBar, MessageBarType, Stack, Text, TextField,
 } from '@fluentui/react';
 
 import {Center} from '../components/Center.js';
@@ -11,6 +11,7 @@ import {transitions} from '../shared/theme.js';
 import {Notifications} from '../components/Notifications.js';
 import {firestore, auth, provider as googleProvider} from '../shared/firebase.js';
 import {FadeLayout} from '../components/FadeLayout.js';
+import {DialogAction} from '../components/Dialog.js';
 
 const initialStatus = {type: 'idle', data: null};
 
@@ -52,14 +53,12 @@ const pageData = {
 			return auth.signInWithEmailAndPassword(email, password);
 		},
 		register(email, password, name) {
-			// TODO: add email verification with `user.sendEmailVerification` method
+			// TODO: switch to passwordless authentication
 			return auth.createUserWithEmailAndPassword(email, password).then(({user}) => {
 				user.updateProfile({
 					displayName: name,
 				});
-				firestore.collection('users').doc(user.uid).set({
-					characters: {},
-				});
+				firestore.collection('users').doc(user.uid).set({currentShareId: null});
 			});
 		},
 	},
@@ -168,12 +167,12 @@ function AuthenticationPage({type}) {
 								transition={transitions.smooth}
 							>
 								<Stack horizontal horizontalAlign="center">
-									<PrimaryButton style={{marginRight: '0.5rem'}} type="submit">
+									<DialogAction variant="primary" style={{marginRight: '0.5rem'}} type="submit">
 										{pageData.mainButton[type]}
-									</PrimaryButton>
-									<DefaultButton onClick={handleGoogleSignIn}>
+									</DialogAction>
+									<DialogAction variant="secondary" onClick={handleGoogleSignIn}>
 										{pageData.googleButton[type]}
-									</DefaultButton>
+									</DialogAction>
 								</Stack>
 							</motion.div>
 						</Stack>

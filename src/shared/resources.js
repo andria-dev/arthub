@@ -95,24 +95,24 @@ export function createResourceFromSubscription(subscribe) {
  * @returns {ResourceReader<V>}
  */
 export function createDocumentResource(documentRef) {
-	return createResource(documentRef.get().then((doc) => doc.data()));
+	return createResource(documentRef.get().then((snapshot) => snapshot.data()));
 }
 
 /**
  * A Suspense-friendly hook that reads a resource for getting the value of a document in the Firestore.
  * Then, whenever the document's data changes, this hook will update the returned value.
- *
  * @template V
- * @param {firebase.firestore.DocumentReference<V>} documentRef
+ * @throws {Promise<V>}
+ * @param {import('firebase').firestore.DocumentReference<V>} reference
  * @param {ResourceReader<V>} resource
  * @returns {V}
  */
-export function useDocumentResource(documentRef, resource) {
+export function useDocumentResource(reference, resource) {
 	const [result, setResult] = useState(resource.read());
 
 	useEffect(() => {
 		let isFirst = true;
-		return documentRef.onSnapshot((snapshot, error) => {
+		return reference.onSnapshot((snapshot, error) => {
 			if (isFirst) {
 				isFirst = false;
 				return;
@@ -121,7 +121,47 @@ export function useDocumentResource(documentRef, resource) {
 			if (error) console.warn(error);
 			else setResult(snapshot.data());
 		});
-	}, [documentRef]);
+	}, [reference]);
+
+	return result;
+}
+
+/**
+ * Creates a resource from a Firebase Query.
+ * @template V
+ * @param {firebase.firestore.Query<V>} query
+ * @returns {ResourceReader<({id: string} & V)[]>}
+ */
+export function createQueryResource(query) {
+	return createResource(query.get().then(
+		({docs}) => docs.map((doc) => ({id: doc.id, ...doc.data()})),
+	));
+}
+
+/**
+ * A Suspense-friendly hook that reads a resource for getting the value of a query in the Firestore.
+ * Then, whenever the collection's data changes, this hook will update the returned value.
+ * @template V
+ * @throws {Promise<V[]>}
+ * @param {import('firebase').firestore.Query<V>} query
+ * @param {ResourceReader<V[]>} resource
+ * @returns {V[]}
+ */
+export function useQueryResource(query, resource) {
+	const [result, setResult] = useState(resource.read());
+
+	useEffect(() => {
+		let isFirst = true;
+		return query.onSnapshot(({docs}, error) => {
+			if (isFirst) {
+				isFirst = false;
+				return;
+			}
+
+			if (error) console.warn(error);
+			else setResult(docs.map((doc) => ({id: doc.id, ...doc.data()})));
+		});
+	}, [query]);
 
 	return result;
 }

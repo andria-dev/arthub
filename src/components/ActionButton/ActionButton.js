@@ -1,7 +1,7 @@
 /* eslint-disable react/button-has-type */
 import {FontIcon, Text} from '@fluentui/react';
 import PropTypes from 'prop-types';
-import '../styles/ActionButton.css';
+import './ActionButton.css';
 
 /**
  * @param {{

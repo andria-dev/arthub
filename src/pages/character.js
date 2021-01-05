@@ -2,12 +2,11 @@ import {useState} from 'react';
 
 import {useMachine} from '@xstate/react';
 import {useHistory, useParams} from 'react-router-dom';
-import * as firebase from 'firebase';
 
 import {
 	firestore, storage, useCharacterWithImages, useUser,
 } from '../shared/firebase.js';
-import {ActionButton} from '../components/ActionButton.js';
+import {ActionButton} from '../components/ActionButton/ActionButton.js';
 import {slideshowMachine} from '../shared/machines.js';
 import {
 	artworkStyles, artworkWrapperStyles, NextButton, PreviousButton,
@@ -61,7 +60,7 @@ export function CharacterPage() {
 	function deleteCharacter() {
 		setStatus('deleting');
 
-		// Delete artwork first
+		// Start deletion of the artwork first
 		const promises = [];
 		for (const fileId of character.files) {
 			promises.push(
@@ -73,12 +72,30 @@ export function CharacterPage() {
 			);
 		}
 
-		// Then delete the character itself
-		const ref = firestore.collection('users').doc(uid);
+		// Then, start deletion of all of the character's shared links. Get shares
+		// where the character field matches this character, delete each matching share.
+		const characterReference = firestore.collection('characters').doc(id);
 		promises.push(
-			ref
-				.update({characters: firebase.firestore.FieldValue.arrayRemove(character)})
-				.catch((error) => console.warn(`Failed to delete character ${id}:`, error)),
+			firestore.collection('shares').where('character', '==', characterReference).get()
+				.then((querySnapshot) => {
+					const shareDeletionPromises = [];
+					querySnapshot.forEach((queryDocumentSnapshot) => {
+						shareDeletionPromises.push(
+							queryDocumentSnapshot.ref.delete().catch((error) => {
+								console.warn(
+									`Failed to delete share "${queryDocumentSnapshot.id}" for character "${id}"`,
+									error,
+								);
+							}),
+						);
+					});
+					return Promise.all(shareDeletionPromises);
+				}),
+		);
+
+		// And finally, start the deletion of the character itself
+		promises.push(
+			characterReference.delete().catch((error) => console.warn(`Failed to delete character ${id}:`, error)),
 		);
 
 		Promise.all(promises).finally(() => {
