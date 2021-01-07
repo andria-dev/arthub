@@ -17,7 +17,7 @@ import {Loading} from '../components/Loading.js';
 
 import '../styles/character.css';
 
-function CharacterSlideshow({context: {currentPage, numberOfImages}, send, resources}) {
+export function CharacterSlideshow({context: {currentPage, numberOfImages}, send, resources}) {
 	if (resources.length === 0) return null;
 
 	const url = resources[currentPage].read();

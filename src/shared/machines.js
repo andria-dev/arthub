@@ -274,6 +274,7 @@ export const profileMenuMachine = createMachine({
 					on: {
 						MENU_BACK: 'profile',
 						SHARE_CHARACTER: '#profile-menu.closed',
+						VIEW_SHARED: '#profile-menu.closed',
 					},
 				},
 			},
@@ -281,23 +282,55 @@ export const profileMenuMachine = createMachine({
 	},
 });
 
+/**
+ *
+ * @param {{
+ * 	onDone?: any,
+ * 	onError?: any,
+ * 	valueKey?: string,
+ * 	valueFrom?: 'event' | 'context',
+ * }} options
+ */
+function makeCopyState({
+	onDone = 'copied',
+	onError = 'notCopied',
+	valueKey = 'value',
+	valueFrom = 'event',
+}) {
+	return {
+		invoke: {
+			src: async (context, event) => {
+				let {clipboard} = navigator;
+				// @ts-ignore
+				if (!clipboard) clipboard = await import('clipboard-polyfill');
+
+				if (valueFrom === 'event') await clipboard.writeText(event[valueKey]);
+				else if (valueFrom === 'context') await clipboard.writeText(context[valueKey]);
+			},
+			onDone,
+			onError,
+		},
+	};
+}
+
 export const ShareContext = createContext([]);
 /**
  * @type {import('xstate').StateMachine<
- * 	{characterId: string, url: string, alias: string, userId: string},
- * 	import('xstate').EventObject & ({characterId: string} | {url: string}),
+ * 	{characterId: string, url: string, alias: string, userId: string, shareIdsToRevoke: Set<string>},
+ * 	import('xstate').EventObject & ({characterId: string} | {url: string} | {shareIdsToRevoke: string[]}),
  * >}
  */
 export const shareMachine = createMachine({
 	id: 'share',
 	initial: 'viewCharacters',
 	context: {
-		characterId: '', url: '', alias: '', userId: '',
+		characterId: '', url: '', alias: '', userId: '', shareIdsToRevoke: new Set(),
 	},
 	states: {
 		viewCharacters: {
 			on: {
 				SHARE_CHARACTER: 'shareCharacters',
+				VIEW_SHARED: 'viewShares',
 			},
 		},
 		shareCharacters: {
@@ -310,6 +343,7 @@ export const shareMachine = createMachine({
 							actions: ['setCharacterId'],
 						},
 						CANCEL: '#share.viewCharacters',
+						VIEW_SHARED: '#share.viewShares',
 					},
 				},
 				confirming: {
@@ -343,7 +377,7 @@ export const shareMachine = createMachine({
 					exit: ['clearCharacterInfo'],
 					on: {
 						DISMISS: 'idle',
-						VIEW_LINKS: '#share.viewLinks',
+						VIEW_SHARED: '#share.viewShares',
 					},
 					initial: 'idle',
 					states: {
@@ -352,13 +386,10 @@ export const shareMachine = createMachine({
 								COPY: 'copying',
 							},
 						},
-						copying: {
-							invoke: {
-								src: (context) => navigator.clipboard.writeText(context.url),
-								onDone: 'copied',
-								onError: 'notCopied',
-							},
-						},
+						copying: makeCopyState({
+							valueKey: 'url',
+							valueFrom: 'context',
+						}),
 						copied: {
 							on: {
 								COPY: 'copying',
@@ -373,15 +404,59 @@ export const shareMachine = createMachine({
 				},
 				failure: {
 					on: {
-						DISMISSED: 'idle',
+						DISMISS: 'idle',
 					},
 				},
 			},
 		},
-		viewLinks: {},
+		viewShares: {
+			initial: 'idle',
+			states: {
+				idle: {
+					on: {
+						REVOKE_SHARES: {
+							target: 'revokingShare',
+							actions: ['setShareIdsToRevoke'],
+						},
+						DISMISS: '#share.viewCharacters',
+						COPY: 'copying',
+					},
+					initial: 'none',
+					states: {
+						none: {},
+						revoked: {},
+						notRevoked: {},
+						copied: {},
+						notCopied: {},
+					},
+				},
+				revokingShare: {
+					invoke: {
+						src: (context) => {
+							const promises = [];
+							for (const shareId of context.shareIdsToRevoke) {
+								promises.push(firestore.collection('shares').doc(shareId).delete());
+							}
+							return Promise.all(promises);
+						},
+						onDone: 'idle.revoked',
+						onError: 'idle.notRevoked',
+					},
+				},
+				copying: makeCopyState({
+					valueKey: 'shareId',
+					valueFrom: 'event',
+					onDone: 'idle.copied',
+					onError: 'idle.notCopied',
+				}),
+			},
+		},
 	},
 }, {
 	actions: {
+		setShareIdsToRevoke: assign({
+			shareIdsToRevoke: (ctx, event) => new Set(event.shareIdsToRevoke),
+		}),
 		setCharacterId: assign({
 			characterId: (ctx, event) => event.characterId,
 		}),

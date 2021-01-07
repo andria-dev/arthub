@@ -2,6 +2,7 @@ import {useContext, useEffect, useRef} from 'react';
 
 import {Text} from '@fluentui/react';
 import {AnimatePresence, motion} from 'framer-motion';
+import {ShepherdTourContext} from 'react-shepherd';
 
 import {colors, transitions} from '../shared/theme.js';
 import {PROFILE_SIZE, ProfilePhoto} from './ProfilePhoto.js';
@@ -127,6 +128,8 @@ export function ProfileMenuItem(props) {
 export function ProfileMenu({
 	email, name, menuName, children,
 }) {
+	const tour = useContext(ShepherdTourContext);
+
 	const [profileState, send, service] = useContext(ProfileMenuContext);
 	const backdropRef = useRef(null);
 
@@ -189,7 +192,15 @@ export function ProfileMenu({
 					onHoverEnd={() => send('HOVER_END')}
 					onFocus={() => send('FOCUS')}
 					onBlur={() => send('BLUR')}
-					onClick={() => send('TAP_TOGGLE')}
+					onClick={() => {
+						send('TAP_TOGGLE');
+						if (
+							tour.isActive()
+							&& (profileState.matches('closed') || profileState.matches('partiallyOpen'))
+						) {
+							tour.next();
+						}
+					}}
 					transition={transitions.menu}
 					aria-label={buttonLabel}
 					title={buttonLabel}
@@ -234,6 +245,7 @@ export function ProfileMenu({
 						animate={{opacity: 0.81}}
 						exit={{opacity: 0}}
 						style={backdropStyles}
+						id="profile-menu-backdrop"
 					/>
 				)}
 			</AnimatePresence>

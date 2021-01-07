@@ -3,7 +3,7 @@ import {
 } from 'react';
 
 import ky from 'ky';
-import firebase from 'firebase';
+import * as firebase from 'firebase';
 import 'firebase/firestore';
 import 'firebase/storage';
 
@@ -11,6 +11,7 @@ import {
 	createQueryResource,
 	createResource,
 	createResourceFromSubscription,
+	useDocumentResource,
 	useQueryResource,
 } from './resources.js';
 
@@ -29,18 +30,20 @@ firebase.initializeApp(config);
 export default firebase;
 
 export const firestore = firebase.firestore();
-window.firestore = firestore;
-firestore.settings({timestampsInSnapshots: true});
 firestore.enablePersistence().catch((error) => console.warn(error));
 
 export const storage = firebase.storage();
 export const auth = firebase.auth();
-window.auth = auth;
 export const provider = new firebase.auth.GoogleAuthProvider();
+
+if (process.env.NODE_ENV === 'development') {
+	window.firestore = firestore;
+	window.auth = auth;
+}
 
 /**
  * @typedef {Object} FirebaseData
- * @property {firebase.User | null} user
+ * @property {import('firebase').User | null} user
  * @property {import('./prop-types.js').Character[]} characters
  */
 
@@ -108,7 +111,7 @@ export function FirebaseProvider({children}) {
 	return <FirebaseUserResource resource={resource}>{children}</FirebaseUserResource>;
 }
 
-/** @returns {firebase.User} */
+/** @returns {import('firebase').User} */
 export function useUser() {
 	const state = useContext(FirebaseContext);
 	return state.user;
@@ -163,6 +166,30 @@ export function useCharacterWithImages(id) {
 		) ?? [];
 		return {character, imageResources};
 	}, [characters, user?.uid, id]);
+}
+
+/**
+ * Takes a character's Id and user document resource and retrieves the specified character.
+ * After that, each image is fetched and a resource is created for each fetch
+ * @param {import('firebase').firestore.DocumentReference<import('./prop-types.js').Character>} reference
+ * @param {import('./resources.js').ResourceReader<import('./prop-types.js').Character>} resource
+ * @returns {{
+	* 	character: import('./prop-types.js').Character,
+	* 	imageResources: Array<import('./resources.js').ResourceReader<string>>
+	* }}
+	*/
+export function useSharedCharacterWithImages(reference, resource) {
+	const user = useUser();
+
+	console.log(reference.path);
+	const character = useDocumentResource(reference, resource);
+
+	return useMemo(() => {
+		const imageResources = character.files.map(
+			(currentId) => createResource(fetchImageURL(character.roles.owner, currentId)),
+		) ?? [];
+		return {character, imageResources};
+	}, [character, user?.uid]);
 }
 
 export const corsAnywhere = ky.create({prefixUrl: '//cors-anywhere.herokuapp.com/'});

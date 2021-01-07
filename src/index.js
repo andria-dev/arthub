@@ -1,10 +1,13 @@
 import {StrictMode, Suspense} from 'react';
-import ReactDOM from 'react-dom';
+import * as ReactDOM from 'react-dom';
+
+import 'shepherd.js/dist/css/shepherd.css';
 
 import {loadTheme} from '@fluentui/react';
 import {Route, Redirect} from 'react-router-dom';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {initializeIcons} from 'office-ui-fabric-react/lib/Icons';
+import {ShepherdTour} from 'react-shepherd';
 
 import {Landing} from './pages/landing.js';
 import {Login, Register} from './pages/login.js';
@@ -12,6 +15,7 @@ import {Home} from './pages/home.js';
 import {NewCharacter} from './pages/new-character.js';
 import {CharacterPage} from './pages/character.js';
 import {EditCharacterPage} from './pages/edit-character.js';
+import {SharedCharacterPage} from './pages/shared-character.js';
 import {NoRoute} from './pages/404.js';
 
 import {Loading} from './components/Loading.js';
@@ -20,7 +24,8 @@ import {BasicBoundary} from './components/BasicBoundary.js';
 import {TransitionRouter} from './components/TransitionRouter.js';
 
 import {theme} from './shared/theme.js';
-import {FirebaseProvider, useUser} from './shared/firebase.js';
+import {auth, FirebaseProvider, useUser} from './shared/firebase.js';
+import {steps, tourOptions} from './shared/steps.js';
 import * as serviceWorker from './serviceWorker.js';
 
 import './styles/index.css';
@@ -35,7 +40,11 @@ initializeIcons();
 function PrivateRoute({as, ...props}) {
 	const user = useUser();
 
-	if (user) return <Route component={as} {...props} />;
+	if (user) {
+		if (!user.isAnonymous) return <Route component={as} {...props} />;
+		auth.signOut();
+	}
+
 	return (
 		<FadeLayout>
 			<Redirect to="/login" />
@@ -63,16 +72,19 @@ ReactDOM.render(
 		<BasicBoundary>
 			<Suspense fallback={<Loading label="Preparing everything as fast as we can..." />}>
 				<FirebaseProvider>
-					<TransitionRouter>
-						<PrivateRoute exact as={Home} path="/" />
-						<PrivateRoute exact as={NewCharacter} path="/new-character" />
-						<PrivateRoute exact as={CharacterPage} path="/character/:characterId" />
-						<PrivateRoute exact as={EditCharacterPage} path="/edit-character/:characterId" />
-						<Landing exact path="/landing" />
-						<UnauthenticatedRoute exact as={Login} path="/login" />
-						<UnauthenticatedRoute exact as={Register} path="/register" />
-						<NoRoute exact path="*" />
-					</TransitionRouter>
+					<ShepherdTour steps={steps} tourOptions={tourOptions}>
+						<TransitionRouter>
+							<PrivateRoute exact as={Home} path="/" />
+							<PrivateRoute exact as={NewCharacter} path="/new-character" />
+							<PrivateRoute exact as={CharacterPage} path="/character/:characterId" />
+							<PrivateRoute exact as={EditCharacterPage} path="/edit-character/:characterId" />
+							<Route component={SharedCharacterPage} exact path="/shared-character/:shareId" />
+							<Route component={Landing} exact path="/landing" />
+							<UnauthenticatedRoute exact as={Login} path="/login" />
+							<UnauthenticatedRoute exact as={Register} path="/register" />
+							<Route component={NoRoute} exact path="*" />
+						</TransitionRouter>
+					</ShepherdTour>
 				</FirebaseProvider>
 			</Suspense>
 		</BasicBoundary>

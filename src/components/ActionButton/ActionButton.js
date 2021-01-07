@@ -35,7 +35,7 @@ export function ActionButton({
 
 ActionButton.propTypes = {
 	type: PropTypes.oneOf(['button', 'submit', 'reset']),
-	variant: PropTypes.oneOf(['round', 'flat', 'bold-orange', 'bold-pink', 'danger']).isRequired,
+	variant: PropTypes.string.isRequired,
 	iconName: PropTypes.string,
 };
 

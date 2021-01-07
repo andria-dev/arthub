@@ -3,6 +3,7 @@ import {useHistory} from 'react-router-dom';
 
 import {Text} from '@fluentui/react';
 
+import {ShepherdTourContext} from 'react-shepherd';
 import {auth, useUser} from '../shared/firebase.js';
 import {ProfileMenuContext} from '../shared/machines.js';
 import {ProfileMenu, ProfileMenuItem} from './ProfileMenu.js';
@@ -14,6 +15,8 @@ import {useScrollStatus} from '../shared/helpers.js';
  * @returns {JSX.Element}
  */
 export function ProfileHeader() {
+	const tour = useContext(ShepherdTourContext);
+
 	const user = useUser();
 	const scrollStatus = useScrollStatus();
 	const [current, send] = useContext(ProfileMenuContext);
@@ -31,15 +34,21 @@ export function ProfileHeader() {
 		menuName = 'Share';
 		menuItems = (
 			<>
-				<ProfileMenuItem key="view-shared">View Shared</ProfileMenuItem>
+				<ProfileMenuItem
+					key="view-shared"
+					id="view-shared-button"
+					onClick={() => send('VIEW_SHARED')}
+				>
+					View Shared
+				</ProfileMenuItem>
 				<ProfileMenuItem
 					key="share"
+					id="share-button"
 					onClick={() => send('SHARE_CHARACTER')}
 				>
 					Share Character
 				</ProfileMenuItem>
-				<ProfileMenuItem key="un-share">Un-share Character</ProfileMenuItem>
-				<ProfileMenuItem key="back" onClick={() => send('MENU_BACK')}>
+				<ProfileMenuItem key="back" id="share-back-button" onClick={() => send('MENU_BACK')}>
 					Back
 				</ProfileMenuItem>
 			</>
@@ -48,12 +57,19 @@ export function ProfileHeader() {
 		menuName = 'Profile';
 		menuItems = (
 			<>
-				<ProfileMenuItem key="share-menu" onClick={() => send('OPEN_SHARE_MENU')}>
+				<ProfileMenuItem key="share-menu" id="share-menu-button" onClick={() => send('OPEN_SHARE_MENU')}>
 					Share Menu
 				</ProfileMenuItem>
-				<ProfileMenuItem key="settings">Settings</ProfileMenuItem>
-				<ProfileMenuItem key="help">Help</ProfileMenuItem>
-				<ProfileMenuItem key="sign-out" onClick={signOut}>
+				<ProfileMenuItem key="settings" id="settings-button">Settings</ProfileMenuItem>
+				<ProfileMenuItem
+					key="help"
+					id="help-tour-button"
+					onClick={() => {
+						if (!tour.isActive()) tour.start();
+					}}
+				>Help
+				</ProfileMenuItem>
+				<ProfileMenuItem key="sign-out" id="sign-out-button" onClick={signOut}>
 					Sign Out
 				</ProfileMenuItem>
 			</>

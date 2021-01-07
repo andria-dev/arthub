@@ -58,6 +58,7 @@ export function DialogParagraph({...props}) {
 	return <Text as="p" variant="medium" {...props} />;
 }
 
+const AnimatedContent = motion.custom(DialogContent);
 /**
  * A wrapper around `@reach/dialog` that provides styles and an id
  * for the title of the dialog via Context.
@@ -66,18 +67,19 @@ export function DialogParagraph({...props}) {
  * 	isOpen: boolean,
  * 	onDismiss?: function(): void,
  * 	children: import('react').ReactNode,
+ * 	overlayProps?: Object,
  * 	[s: string]: any,
  * }} props
  */
 export function Dialog({
-	isOpen, onDismiss, children, ...props
+	isOpen, onDismiss, children, overlayProps, ...props
 }) {
 	const titleId = useId('title');
 	return (
-		<DialogOverlay isOpen={isOpen} onDismiss={onDismiss} className="Dialog__overlay" {...props}>
-			<DialogContent className="Dialog" aria-labelledby={titleId}>
+		<DialogOverlay isOpen={isOpen} onDismiss={onDismiss} className="Dialog__overlay" {...overlayProps}>
+			<AnimatedContent layout="true" className="Dialog" aria-labelledby={titleId} {...props}>
 				<DialogContext.Provider value={{titleId}}>{children}</DialogContext.Provider>
-			</DialogContent>
+			</AnimatedContent>
 		</DialogOverlay>
 	);
 }

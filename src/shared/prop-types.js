@@ -1,11 +1,12 @@
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 
 /**
  * @typedef {{
- *   id: string,
- *   files: Array<string>,
- *   name: string,
- *   story: string
+ * 	id: string,
+ * 	files: Array<string>,
+ * 	name: string,
+ * 	story: string,
+ * 	roles: {owner: string},
  * }} Character
  */
 export const CharacterType = PropTypes.shape({

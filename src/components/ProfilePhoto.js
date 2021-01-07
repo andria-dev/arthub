@@ -37,8 +37,8 @@ export function ProfilePhoto({email, ...props}) {
 	const [state, send] = useMachine(gravatarMachine);
 
 	useEffect(() => {
-		if (email) send('FETCH', {email});
-	}, [email, send]);
+		if (email && !user?.photoURL) send('FETCH', {email});
+	}, [email, send, user]);
 
 	let photo;
 	if (user?.photoURL) photo = user.photoURL;

@@ -1,10 +1,13 @@
-import {Suspense, useCallback, useMemo} from 'react';
+import {
+	Suspense, useCallback, useMemo, useContext, useEffect,
+} from 'react';
 import {useHistory} from 'react-router-dom';
 
 import {Text} from '@fluentui/react';
 import {useMachine} from '@xstate/react';
 import {AnimatePresence, motion} from 'framer-motion';
 
+import {ShepherdTourContext} from 'react-shepherd';
 import {ActionButton} from '../components/ActionButton/ActionButton.js';
 import {
 	ProfileMenuContext, profileMenuMachine, ShareContext, shareMachine,
@@ -12,17 +15,29 @@ import {
 import {Loading} from '../components/Loading.js';
 import {CharacterCardList} from '../components/CharacterCardList.js';
 import {ProfileHeader} from '../components/ProfileHeader.js';
-import {ConfirmShareDialog, SharingCharacterDialog, ShowShareUrlDialog} from '../components/ShareDialogs.js';
+import {
+	ConfirmShareDialog, SharingCharacterDialog, ShowShareUrlDialog, ViewShareLinksDialog,
+} from '../components/ShareDialogs.js';
+import {useUser} from '../shared/firebase.js';
 
 import '../styles/ProfileMenu.css';
+import '../styles/home.css';
 import 'wicg-inert';
-import {useUser} from '../shared/firebase.js';
 
 /**
  * Home page
  * @returns {import('react').ReactNode}
  */
 export function Home() {
+	const tour = useContext(ShepherdTourContext);
+
+	useEffect(() => {
+		if (localStorage.getItem('first-tour') === null) {
+			tour.start();
+			localStorage.setItem('first-tour', 'done');
+		}
+	}, [tour]);
+
 	const user = useUser();
 	const [shareState, sendToShare] = useMachine(shareMachine.withContext({
 		...shareMachine.context,
@@ -51,16 +66,13 @@ export function Home() {
 			initial={{opacity: 0}}
 			animate={{opacity: 1}}
 			exit={{opacity: 0}}
+			className="Home"
 		>
 			<ProfileMenuContext.Provider value={profileMenuMachineValues}>
 				<ProfileHeader />
 			</ProfileMenuContext.Provider>
 
-			<main
-				style={{
-					flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '95px',
-				}}
-			>
+			<main className="Home__cards-container">
 				<AnimatePresence>
 					{shareState.matches('shareCharacters') && (
 						<motion.div
@@ -86,6 +98,7 @@ export function Home() {
 						<ConfirmShareDialog />
 						<SharingCharacterDialog />
 						<ShowShareUrlDialog />
+						<ViewShareLinksDialog />
 					</ShareContext.Provider>
 				</Suspense>
 			</main>
@@ -96,7 +109,12 @@ export function Home() {
 				}}
 			>
 				{shareState.matches('viewCharacters') && (
-					<ActionButton variant="round-light-orange" iconName="Add" onClick={openNewCharacterPage}>
+					<ActionButton
+						id="new-character-button"
+						variant="round-light-orange"
+						iconName="Add"
+						onClick={openNewCharacterPage}
+					>
 						New
 					</ActionButton>
 				)}

@@ -4,14 +4,39 @@
 	justify-content: flex-start;
 	align-items: center;
 
+	overflow-y: auto;
 	width: calc(100vw - 18px * 4);
 	max-width: 30rem;
+	max-height: calc(100vh - 80px);
 	padding: 19px 18px;
 
 	background-color: var(--light);
 
 	border-radius: 7px;
 	box-shadow: 0px 2px 5px 0px var(--orange-shadow);
+}
+
+.TourDialog {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+
+	max-width: calc(100vw - (18px * 2) - 10px);
+	padding: 19px 18px;
+
+	background-color: var(--light);
+
+	border-radius: 7px;
+	box-shadow: 0px 2px 5px 0px var(--orange-shadow);
+}
+.TourDialog[hidden] {
+	display: none;
+}
+.TourDialog .Dialog__action {
+	min-width: 80px;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .Dialog:focus {

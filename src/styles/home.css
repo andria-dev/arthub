@@ -1,0 +1,20 @@
+.Home__cards-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	margin-top: 95px;
+}
+
+@media (min-width: 800px) {
+	.Home__cards-container {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: unset;
+
+		max-width: 1200px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}

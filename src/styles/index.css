@@ -21,3 +21,11 @@ code {
 .no-overflow {
 	overflow: unset;
 }
+
+.shepherd-content {
+	width: 100%;
+}
+.shepherd-footer {
+	display: flex;
+	margin-top: 30px;
+}
