@@ -7,6 +7,7 @@ import {useCharacters} from '../shared/firebase.js';
 import {CharacterCard} from './CharacterCard.js';
 import {colors} from '../shared/theme.js';
 import {ShareContext} from '../shared/machines.js';
+import {Center} from './Center.js';
 
 /**
  * Renders a list of `<CharacterCard>`s.
@@ -44,21 +45,23 @@ export function CharacterCardList() {
 	// Otherwise, inform the user of how to create a character.
 	// TODO: Add alt for pride-drawing.svg
 	return (
-		<div
-			style={{
-				width: '100%',
-				height: 'calc(100% - 100px)',
-				display: 'flex',
-				flexDirection: 'column',
-				alignItems: 'center',
-				justifyContent: 'center',
-			}}
-		>
-			<img src="/pride-drawing.svg" alt="" style={{width: 270, height: 196, marginBottom: 35}} />
-			{/* @ts-ignore */}
-			<Text variant="mediumTitle" as="h2" style={{textAlign: 'center', maxWidth: 232, color: colors.dark}}>
-				To get started, add some characters with the "New" button.
-			</Text>
-		</div>
+		<Center>
+			<div
+				style={{
+					width: '100%',
+					height: 'calc(100% - 100px)',
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					justifyContent: 'center',
+				}}
+			>
+				<img src="/pride-drawing.svg" alt="" style={{width: 270, height: 196, marginBottom: 35}} />
+				{/* @ts-ignore */}
+				<Text variant="mediumTitle" as="h2" style={{textAlign: 'center', maxWidth: 232, color: colors.dark}}>
+					To get started, add some characters with the "New" button.
+				</Text>
+			</div>
+		</Center>
 	);
 }

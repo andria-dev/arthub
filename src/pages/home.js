@@ -72,7 +72,7 @@ export function Home() {
 				<ProfileHeader />
 			</ProfileMenuContext.Provider>
 
-			<main className="Home__cards-container">
+			<main className="Home__cards-container" style={{height: '100%'}}>
 				<AnimatePresence>
 					{shareState.matches('shareCharacters') && (
 						<motion.div

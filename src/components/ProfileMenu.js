@@ -171,7 +171,7 @@ export function ProfileMenu({
 	let width;
 	let height = PROFILE_SIZE;
 	if (profileState.matches('closed')) width = PROFILE_SIZE;
-	else if (profileState.matches('partiallyOpen')) width = PROFILE_SIZE * 3;
+	else if (profileState.matches('partiallyOpen')) width = PROFILE_SIZE * 3.5;
 	else if (profileState.matches('open')) {
 		width = 249;
 		height = 210;
@@ -213,7 +213,7 @@ export function ProfileMenu({
 						transition={{type: 'spring', mass: 0.2}}
 					>
 						<Text variant="mediumTitle" style={nameStyles}>
-							{profileState.matches('open') ? `${menuName} Menu` : name}
+							{profileState.matches('open') ? `${menuName} Menu` : name.split(' ')[0]}
 						</Text>
 					</motion.span>
 					<ProfilePhoto email={email} />
