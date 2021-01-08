@@ -65,6 +65,7 @@
 	border: none;
 	border-radius: 7px;
 	pointer-events: none;
+	cursor: pointer;
 }
 
 .CharacterCard:hover .CharacterCard__cover,

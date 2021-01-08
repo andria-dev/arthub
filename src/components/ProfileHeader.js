@@ -60,7 +60,6 @@ export function ProfileHeader() {
 				<ProfileMenuItem key="share-menu" id="share-menu-button" onClick={() => send('OPEN_SHARE_MENU')}>
 					Share Menu
 				</ProfileMenuItem>
-				<ProfileMenuItem key="settings" id="settings-button">Settings</ProfileMenuItem>
 				<ProfileMenuItem
 					key="help"
 					id="help-tour-button"

@@ -54,7 +54,7 @@ export function CharacterCard({character, children}) {
 			)}
 
 			<figcaption className="CharacterCard__overlay">
-				<p className="CharacterCard__name" style={{margin: 0}}>
+				<p className="CharacterCard__name">
 					{character.name}
 				</p>
 				{children}

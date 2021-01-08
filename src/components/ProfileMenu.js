@@ -71,7 +71,7 @@ const nameStyles = {
 const listVariants = {
 	visible: {
 		opacity: 1,
-		height: 259 - PROFILE_SIZE,
+		height: 210 - PROFILE_SIZE,
 		transition: {
 			staggerChildren: 0.05,
 		},
@@ -174,7 +174,7 @@ export function ProfileMenu({
 	else if (profileState.matches('partiallyOpen')) width = PROFILE_SIZE * 3;
 	else if (profileState.matches('open')) {
 		width = 249;
-		height = 259;
+		height = 210;
 	}
 
 	let buttonLabel = 'Open profile menu';
