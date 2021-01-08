@@ -43,7 +43,7 @@ export const steps = [
 		buttons: [actions.done, actions.prev],
 	},
 	{
-		beforeShowPromise: () => new Promise((resolve) => setTimeout(resolve, 1000)),
+		beforeShowPromise: () => new Promise((resolve) => setTimeout(resolve, 750)),
 		attachTo: {element: '#share-menu-button', on: 'bottom-start'},
 		text: 'If you wish to share, or un-share, one of your characters you can go in here.',
 		buttons: [actions.done, actions.prev, actions.next],

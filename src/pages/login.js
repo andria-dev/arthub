@@ -3,15 +3,16 @@ import {useState} from 'react';
 import {motion} from 'framer-motion';
 import {Link as RouterLink} from 'react-router-dom';
 import {
-	Link, MessageBar, MessageBarType, Stack, Text, TextField,
+	MessageBar, MessageBarType, Stack, Text,
 } from '@fluentui/react';
 
 import {Center} from '../components/Center.js';
-import {transitions} from '../shared/theme.js';
+import {transitions, colors} from '../shared/theme.js';
 import {Notifications} from '../components/Notifications.js';
 import {firestore, auth, provider as googleProvider} from '../shared/firebase.js';
 import {FadeLayout} from '../components/FadeLayout.js';
 import {DialogAction} from '../components/Dialog.js';
+import {TextInput} from '../components/Input/Input.js';
 
 const initialStatus = {type: 'idle', data: null};
 
@@ -25,18 +26,18 @@ const pageData = {
 			<>
 				Don't have an account,{' '}
 				{/* @ts-ignore */}
-				<Link as={RouterLink} to="/register">
+				<RouterLink to="/register" style={{color: colors.realOrange}}>
 					register now.
-				</Link>
+				</RouterLink>
 			</>
 		),
 		register: (
 			<>
 				Don't have an account,{' '}
 				{/* @ts-ignore */}
-				<Link as={RouterLink} to="/login">
+				<RouterLink to="/login" style={{color: colors.realOrange}}>
 					login now.
-				</Link>
+				</RouterLink>
 			</>
 		),
 	},
@@ -127,8 +128,8 @@ function AuthenticationPage({type}) {
 							variants={titleVariants}
 							transition={transitions.smooth}
 						>
-							<Text variant="superLarge" as="h1">
-								{pageData.title[type]}
+							<Text variant="superLarge" as="h1" style={{display: 'block'}}>
+								Art Hub
 							</Text>
 						</motion.span>
 
@@ -139,17 +140,27 @@ function AuthenticationPage({type}) {
 						>
 							{
 								type === 'register'
-								&& <TextField label="Name" placeholder="Andria" type="name" name="name" required />
+								&& (
+									<TextInput
+										label="Name"
+										placeholder="Andria"
+										type="name"
+										name="name"
+										required
+										style={{marginBottom: 10}}
+									/>
+								)
 							}
-							<TextField
+							<TextInput
 								label="Email"
 								placeholder="name@hey.com"
 								autoComplete="email"
 								type="email"
 								name="email"
 								required
+								style={{marginBottom: 10}}
 							/>
-							<TextField
+							<TextInput
 								label="Password"
 								placeholder="•••••••••••••••"
 								autoComplete="new-password"
@@ -167,7 +178,7 @@ function AuthenticationPage({type}) {
 								transition={transitions.smooth}
 							>
 								<Stack horizontal horizontalAlign="center">
-									<DialogAction variant="primary" style={{marginRight: '0.5rem'}} type="submit">
+									<DialogAction variant="primary" style={{marginRight: 20}} type="submit">
 										{pageData.mainButton[type]}
 									</DialogAction>
 									<DialogAction variant="secondary" onClick={handleGoogleSignIn}>
@@ -177,7 +188,7 @@ function AuthenticationPage({type}) {
 							</motion.div>
 						</Stack>
 
-						<Text as="p" style={{marginTop: '1rem'}}>
+						<Text as="p" style={{marginTop: 30}}>
 							{pageData.switchMessage[type]}
 						</Text>
 					</Stack>

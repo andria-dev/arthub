@@ -22,7 +22,8 @@
 	justify-content: flex-start;
 	align-items: center;
 
-	max-width: calc(100vw - (18px * 2) - 10px);
+	width: calc(100vw - (18px * 2) - 10px);
+	max-width: 30rem;
 	padding: 19px 18px;
 
 	background-color: var(--light);
