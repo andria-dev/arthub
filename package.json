@@ -31,7 +31,7 @@
     "marked": "^1.2.5",
     "mini-debounce": "^1.0.8",
     "prop-types": "^15.7.2",
-    "react": "0.0.0-experimental-3310209d0",
+    "react": "0.14.0",
     "react-dom": "0.0.0-experimental-3310209d0",
     "react-dropzone": "^11.0.2",
     "react-router-dom": "5",
