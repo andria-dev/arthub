@@ -78,7 +78,7 @@ I am using the `framer-motion` package from npm for animation, transitions, and 
 - [ ] Responsive UI
 	- [x] Mobile
 	- [x] Tablet (sorta)
-	- [ ] Desktop (I mean it's usable on Desktop just not )
+	- [ ] Desktop (I mean it's usable on Desktop just not done)
 
 ## Firebase
 
