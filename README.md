@@ -69,16 +69,16 @@ I am using the `framer-motion` package from npm for animation, transitions, and 
 - [x] Delete character
   - [x] Removes the character document
   - [x] Deletes files related to the character
-  - [ ] Confirms the user really wants to delete their character — Non-MVP
+  - [x] Confirms the user really wants to delete their character — Non-MVP
 - [x] Sharing
 	- [x] Share character via unique link <br>
 		`[{characterId: string, alias: string, shareId: string}]`
 	- [x] Un-share character links
 	- [x] View shared links
 - [ ] Responsive UI
- - [x] Mobile
- - [x] Tablet (sorta)
- - [ ] Desktop (I mean it's usable on Desktop just not )
+	- [x] Mobile
+	- [x] Tablet (sorta)
+	- [ ] Desktop (I mean it's usable on Desktop just not )
 
 ## Firebase
 

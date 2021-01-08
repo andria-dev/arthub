@@ -18,7 +18,7 @@ import {ProfileHeader} from '../components/ProfileHeader.js';
 import {
 	ConfirmShareDialog, SharingCharacterDialog, ShowShareUrlDialog, ViewShareLinksDialog,
 } from '../components/ShareDialogs.js';
-import {useUser} from '../shared/firebase.js';
+import {useUser, useCharacters} from '../shared/firebase.js';
 
 import '../styles/ProfileMenu.css';
 import '../styles/home.css';
@@ -30,6 +30,7 @@ import 'wicg-inert';
  */
 export function Home() {
 	const tour = useContext(ShepherdTourContext);
+	const characters = useCharacters();
 
 	useEffect(() => {
 		if (localStorage.getItem('first-tour') === null) {
@@ -72,7 +73,7 @@ export function Home() {
 				<ProfileHeader />
 			</ProfileMenuContext.Provider>
 
-			<main className="Home__cards-container" style={{height: '100%'}}>
+			<main className="Home__cards-container" style={{minHeight: characters.length ? '' : 'calc(100% - 100px)'}}>
 				<AnimatePresence>
 					{shareState.matches('shareCharacters') && (
 						<motion.div

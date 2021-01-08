@@ -14,6 +14,7 @@ import {
 import {CharacterLayout, CharacterStory} from '../components/character-parts.js';
 import {FadeLayout} from '../components/FadeLayout.js';
 import {Loading} from '../components/Loading.js';
+import {DeleteCharacterDialog} from '../components/DeleteCharacterDialog.js';
 
 import '../styles/character.css';
 
@@ -125,7 +126,7 @@ export function CharacterPage() {
 						type="button"
 						variant="flat-danger"
 						iconName="Trash"
-						onClick={deleteCharacter}
+						onClick={() => setStatus('confirming')}
 					>
 						Delete
 					</ActionButton>
@@ -137,6 +138,12 @@ export function CharacterPage() {
 					</ActionButton>
 				</>
 			)}
-		/>
+		>
+			<DeleteCharacterDialog
+				isOpen={status === 'confirming'}
+				onDismiss={() => setStatus('viewing')}
+				confirm={deleteCharacter}
+			/>
+		</CharacterLayout>
 	);
 }

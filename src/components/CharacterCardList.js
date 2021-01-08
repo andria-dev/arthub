@@ -49,7 +49,7 @@ export function CharacterCardList() {
 			<div
 				style={{
 					width: '100%',
-					height: 'calc(100% - 100px)',
+					minHeight: '100%',
 					display: 'flex',
 					flexDirection: 'column',
 					alignItems: 'center',
