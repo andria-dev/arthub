@@ -70,15 +70,15 @@ I am using the `framer-motion` package from npm for animation, transitions, and 
   - [x] Removes the character document
   - [x] Deletes files related to the character
   - [ ] Confirms the user really wants to delete their character — Non-MVP
-- [ ] Sharing
-	- [ ] Share character via unique link <br>
+- [x] Sharing
+	- [x] Share character via unique link <br>
 		`[{characterId: string, alias: string, shareId: string}]`
-	- [ ] Un-share character links
-	- [ ] View shared links
+	- [x] Un-share character links
+	- [x] View shared links
 - [ ] Responsive UI
  - [x] Mobile
- - [ ] Tablet
- - [ ] Desktop
+ - [x] Tablet (sorta)
+ - [ ] Desktop (I mean it's usable on Desktop just not )
 
 ## Firebase
 
