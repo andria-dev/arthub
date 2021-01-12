@@ -13,7 +13,7 @@ import './Input.css';
  * }} params
  */
 export function TextInput({
-	id = 'input',
+	id = null,
 	label,
 	frameProps = emptyObject,
 	...props

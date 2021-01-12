@@ -188,11 +188,11 @@ export function clearStorageKeys(...keys) {
 	}
 }
 
-export function CharacterNameInput({storageKey, defaultValue}) {
-	const id = useId('name');
+export function CharacterNameInput({id = null, storageKey, defaultValue}) {
+	const idValue = useId(id);
 	return (
 		<CharacterInput
-			id={id}
+			id={idValue}
 			name="name"
 			label="Name"
 			placeholder="Lumiére"
@@ -202,11 +202,11 @@ export function CharacterNameInput({storageKey, defaultValue}) {
 		/>
 	);
 }
-export function CharacterStoryInput({storageKey, defaultValue}) {
-	const id = useId('story');
+export function CharacterStoryInput({id = null, storageKey, defaultValue}) {
+	const idValue = useId(id);
 	return (
 		<CharacterInput
-			id={id}
+			id={idValue}
 			name="story"
 			label="Character Story"
 			placeholder="Tell your characters story and explain their background…"

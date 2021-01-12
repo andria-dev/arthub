@@ -39,7 +39,7 @@ export const steps = [
 	{
 		attachTo: {element: '#profile-menu > div > button', on: 'bottom'},
 		text: 'This button will open your profile menu. In it you can share characters,'
-			+ ' view this tour, change settings, and sign out. Try it.',
+			+ ' view this tour, change settings, and sign out.<br><strong>Please try clicking it.</strong>',
 		buttons: [actions.done, actions.prev],
 	},
 	{

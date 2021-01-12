@@ -64,7 +64,10 @@ export function ProfileHeader() {
 					key="help"
 					id="help-tour-button"
 					onClick={() => {
-						if (!tour.isActive()) tour.start();
+						if (!tour.isActive()) {
+							send('START_TOUR');
+							tour.start();
+						}
 					}}
 				>Help
 				</ProfileMenuItem>

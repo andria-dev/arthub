@@ -268,6 +268,7 @@ export const profileMenuMachine = createMachine({
 				profile: {
 					on: {
 						OPEN_SHARE_MENU: 'share',
+						START_TOUR: '#profile-menu.closed',
 					},
 				},
 				share: {
