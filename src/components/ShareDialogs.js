@@ -40,7 +40,7 @@ export function ConfirmShareDialog() {
 			<form style={{width: '100%'}} onSubmit={handleSubmit}>
 				<TextInput
 					name="linkAlias"
-					label="Link alias"
+					label="Link name"
 					placeholder="Jane's link..."
 					frameProps={{style: {width: '100%'}}}
 					required
